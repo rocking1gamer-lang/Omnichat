@@ -1,8 +1,7 @@
 const CHAT_MODEL = "@cf/google/gemma-4-26b-a4b-it";
 const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
-
-const SYSTEM_PROMPT = `You are OmniChat, an independent multimodal AI assistant. Be useful, accurate, direct and natural. Analyze files when provided. Write correct code in fenced markdown blocks. Never invent files, links, citations, searches, or actions. If web search results are supplied, use them as evidence and clearly distinguish them from your own knowledge. Do not reveal private chain-of-thought.`;
+const SYSTEM_PROMPT = `You are OmniChat, an independent multimodal AI assistant. Be accurate, useful, direct and natural. Write correct code in fenced markdown blocks. Analyze supplied file text when present. Never claim to have created or uploaded a file unless the application actually did so. Do not reveal private chain-of-thought.`;
 const CORS = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"GET,POST,OPTIONS","Access-Control-Allow-Headers":"Content-Type"};
 
 export default {
@@ -10,60 +9,53 @@ export default {
     const url = new URL(request.url);
     if (request.method === "OPTIONS") return new Response(null,{headers:CORS});
     try {
-      if (url.pathname === "/api/health") return json({ok:true,chatModel:CHAT_MODEL,imageModel:IMAGE_MODEL});
-
+      if (url.pathname === "/api/health") return json({ok:true});
       if (url.pathname === "/api/chat" && request.method === "POST") {
-        const body = await request.json();
-        const messages = Array.isArray(body.messages) ? body.messages : [];
-        if (!messages.length) return json({error:"messages is required"},400);
-        const clean = messages.filter(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string").slice(-40);
-        const result = await env.AI.run(CHAT_MODEL,{messages:[{role:"system",content:SYSTEM_PROMPT},...clean],temperature:0.55,max_tokens:4096});
+        const body=await request.json();
+        const messages=Array.isArray(body.messages)?body.messages:[];
+        if(!messages.length) return json({error:"messages is required"},400);
+        const clean=messages.filter(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string").slice(-40);
+        const result=await env.AI.run(CHAT_MODEL,{messages:[{role:"system",content:SYSTEM_PROMPT},...clean],temperature:0.55,max_tokens:4096});
         const answer=result?.response||result?.choices?.[0]?.message?.content||result?.result?.response||"";
         if(!answer) return json({error:"The model returned an empty response."},502);
         return json({answer});
       }
-
-      if (url.pathname === "/api/image" && request.method === "POST") {
-        const body=await request.json(); const prompt=String(body.prompt||"").trim();
-        if(!prompt) return json({error:"Image prompt is required."},400);
+      if(url.pathname==="/api/image"&&request.method==="POST"){
+        const body=await request.json(), prompt=String(body.prompt||"").trim();
+        if(!prompt)return json({error:"Image prompt is required."},400);
         const result=await env.AI.run(IMAGE_MODEL,{prompt,steps:4});
-        if(!result?.image) return json({error:"The image model returned no image."},502);
-        return json({dataUrl:`data:image/jpeg;base64,${result.image}`});
+        if(!result?.image)return json({error:"The image model returned no image."},502);
+        return json({dataUrl:"data:image/jpeg;base64,"+result.image});
       }
-
-      if (url.pathname === "/api/convert" && request.method === "POST") {
-        const form=await request.formData(); const file=form.get("file");
-        if(!(file instanceof File)) return json({error:"No file uploaded."},400);
-        if(file.size>MAX_FILE_BYTES) return json({error:"File is larger than 8 MB."},413);
+      if(url.pathname==="/api/read-file"&&request.method==="POST"){
+        const form=await request.formData(), file=form.get("file");
+        if(!(file instanceof File))return json({error:"No file uploaded."},400);
+        if(file.size>MAX_FILE_BYTES)return json({error:"File is larger than 8 MB."},413);
         const result=await env.AI.toMarkdown({name:file.name,blob:new Blob([await file.arrayBuffer()],{type:file.type||"application/octet-stream"})},{output:{format:"markdown"}});
         const item=Array.isArray(result)?result[0]:result;
-        if(!item||item.format==="error") return json({error:item?.error||"Could not read this file."},422);
+        if(!item||item.format==="error")return json({error:item?.error||"Could not read this file."},422);
         return json({name:item.name||file.name,markdown:item.data||""});
       }
-
-      // Lightweight internet search. It returns search snippets to the client; the client can pass them to the model.
-      if (url.pathname === "/api/web-search" && request.method === "POST") {
-        const body=await request.json(); const q=String(body.query||"").trim();
-        if(!q) return json({error:"Search query is required."},400);
-        if(q.length>300) return json({error:"Search query is too long."},400);
-        const target="https://html.duckduckgo.com/html/?q="+encodeURIComponent(q);
-        const r=await fetch(target,{headers:{"User-Agent":"Mozilla/5.0 (compatible; OmniChat/1.0)"}});
-        if(!r.ok) return json({error:`Search provider returned ${r.status}.`},502);
-        const html=await r.text();
-        const results=[];
+      if(url.pathname==="/api/web-search"&&request.method==="POST"){
+        const body=await request.json(), q=String(body.query||"").trim();
+        if(!q)return json({error:"Search query is required."},400);
+        const r=await fetch("https://html.duckduckgo.com/html/?q="+encodeURIComponent(q),{headers:{"User-Agent":"Mozilla/5.0 OmniChat"}});
+        if(!r.ok)return json({error:"Search provider returned "+r.status+"."},502);
+        const html=await r.text(), results=[];
         const re=/<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-        let m; while((m=re.exec(html))&&results.length<8){
-          const title=strip(m[2]); const href=decodeRedirect(m[1]);
-          const start=m.index; const tail=html.slice(start,start+5000); const sm=tail.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>|class="result__snippet"[^>]*>([\s\S]*?)<\/div>/i);
-          const snippet=strip(sm?.[1]||sm?.[2]||"");
-          if(title&&href) results.push({title,url:href,snippet});
+        let m;
+        while((m=re.exec(html))&&results.length<8){
+          const title=strip(m[2]), href=decodeRedirect(m[1]), tail=html.slice(m.index,m.index+6000);
+          const sm=tail.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/(?:a|div)>/i);
+          const snippet=strip(sm?.[1]||"");
+          if(title&&href)results.push({title,url:href,snippet});
         }
         return json({query:q,results});
       }
       return env.ASSETS.fetch(request);
-    } catch(e){console.error(e);return json({error:e?.message||"Request failed."},500);}
+    }catch(e){console.error(e);return json({error:e?.message||"Request failed."},500);}
   }
 };
 function strip(s){return String(s||"").replace(/<[^>]+>/g," ").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/\s+/g," ").trim();}
-function decodeRedirect(u){try{const x=new URL(u,"https://html.duckduckgo.com");const v=x.searchParams.get("uddg");return v?decodeURIComponent(v):u.startsWith("/")?"https://html.duckduckgo.com"+u:u;}catch{return u;}}
-function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{...CORS,"Content-Type":"application/json;charset=utf-8"}});}
+function decodeRedirect(u){try{const x=new URL(u,"https://html.duckduckgo.com");const v=x.searchParams.get("uddg");return v?decodeURIComponent(v):u.startsWith("/")?"https://html.duckduckgo.com"+u:u}catch{return u}}
+function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{...CORS,"Content-Type":"application/json"}})}
