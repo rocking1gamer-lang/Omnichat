@@ -39,16 +39,35 @@ export default {
       if(url.pathname==="/api/web-search"&&request.method==="POST"){
         const body=await request.json(), q=String(body.query||"").trim();
         if(!q)return json({error:"Search query is required."},400);
-        const r=await fetch("https://html.duckduckgo.com/html/?q="+encodeURIComponent(q),{headers:{"User-Agent":"Mozilla/5.0 OmniChat"}});
-        if(!r.ok)return json({error:"Search provider returned "+r.status+"."},502);
-        const html=await r.text(), results=[];
-        const re=/<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-        let m;
-        while((m=re.exec(html))&&results.length<8){
-          const title=strip(m[2]), href=decodeRedirect(m[1]), tail=html.slice(m.index,m.index+6000);
-          const sm=tail.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/(?:a|div)>/i);
-          const snippet=strip(sm?.[1]||"");
-          if(title&&href)results.push({title,url:href,snippet});
+        const endpoints=[
+          "https://html.duckduckgo.com/html/?q="+encodeURIComponent(q),
+          "https://lite.duckduckgo.com/lite/?q="+encodeURIComponent(q)
+        ];
+        let html="", lastStatus=0;
+        for(const endpoint of endpoints){
+          try{const r=await fetch(endpoint,{headers:{"User-Agent":"Mozilla/5.0 (compatible; OmniChat/12.0)"}});lastStatus=r.status;if(r.ok){html=await r.text();break}}catch{}
+        }
+        if(!html)return json({error:"Search provider unavailable ("+(lastStatus||"network error")+")."},502);
+        const results=[];
+        // DuckDuckGo HTML result links. Accept both current result pages and lite pages.
+        const patterns=[
+          /<a[^>]+class=["']result__a["'][^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,
+          /<a[^>]+class=["'][^"']*result-link[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,
+          /<a[^>]+href=["'](https?:\/\/[^"']+)["'][^>]*>([\s\S]{5,180}?)<\/a>/gi
+        ];
+        const seen=new Set();
+        for(const re of patterns){
+          let m;
+          while((m=re.exec(html))&&results.length<8){
+            const title=strip(m[2]), href=decodeRedirect(m[1]);
+            if(!title||!href||seen.has(href)||/^javascript:/i.test(href)||href.includes("duckduckgo.com/y.js"))continue;
+            if(/DuckDuckGo|Privacy|Settings|Feedback/i.test(title)&&!href.includes("wikipedia.org"))continue;
+            seen.add(href);
+            const nearby=html.slice(Math.max(0,m.index-500),Math.min(html.length,m.index+5000));
+            const sm=nearby.match(/class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\/[^>]+>/i)||nearby.match(/class=["'][^"']*snippet[^"']*["'][^>]*>([\s\S]*?)<\/[^>]+>/i);
+            results.push({title,url:href,snippet:strip(sm?.[1]||"")});
+          }
+          if(results.length>=8)break;
         }
         return json({query:q,results});
       }
