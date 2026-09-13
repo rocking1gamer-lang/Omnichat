@@ -128,15 +128,15 @@ function renderChips(){
   });
 }
 function removeAttachment(i){attachments.splice(i,1);renderChips()}
-function md(text){
+function renderMarkdown(text){
   try { if (window.marked?.parse) return marked.parse(String(text)); } catch {}
   return '<pre style="white-space:pre-wrap;word-break:break-word">'+escapeHtml(String(text))+'</pre>';
 }
 function render(text,user=false,files=[]){
   const m=document.createElement("div");m.className="msg";m.innerHTML=`<div class="avatar ${user?"me":"ai"}">${user?"YOU":"O"}</div><div class="content"></div>`;
   const c=m.querySelector(".content");
-  if(user){c.innerHTML=md(escapeHtml(text));if(files.length){const x=document.createElement("div");x.style="color:#999;font-size:12px;margin-top:7px";x.textContent="📎 "+files.join(", ");c.appendChild(x)}}
-  else{c.innerHTML=md(text);if(window.hljs?.highlightElement){m.querySelectorAll("pre code").forEach(x=>{try{hljs.highlightElement(x)}catch{}})}addActions(c,text)}
+  if(user){c.innerHTML=renderMarkdown(escapeHtml(text));if(files.length){const x=document.createElement("div");x.style="color:#999;font-size:12px;margin-top:7px";x.textContent="📎 "+files.join(", ");c.appendChild(x)}}
+  else{c.innerHTML=renderMarkdown(text);if(window.hljs?.highlightElement){m.querySelectorAll("pre code").forEach(x=>{try{hljs.highlightElement(x)}catch{}})}addActions(c,text)}
   inner.appendChild(m);chat.scrollTop=chat.scrollHeight;
 }
 function renderImage(data,prompt){
@@ -149,10 +149,24 @@ function renderImage(data,prompt){
 function addActions(c,text){
   const a=document.createElement("div");a.className="actions";
   const copy=action("Copy",async()=>{await navigator.clipboard.writeText(text);});
-  const md=action("Download .md",()=>download(text,"omnichat-response.md","text/markdown"));
+  const mdBtn=action("Download .md",()=>download(text,"omnichat-response.md","text/markdown"));
   const txt=action("Download .txt",()=>download(text,"omnichat-response.txt","text/plain"));
-  const htmlBtn=action("Download .html",()=>download(`<!doctype html><meta charset="utf-8"><title>OmniChat</title><article>${md(text)}</article>`,"omnichat-response.html","text/html"));
-  a.append(copy,md,txt,htmlBtn);c.appendChild(a);
+  const htmlBtn=action("Download .html",()=>download(`<!doctype html><meta charset="utf-8"><title>OmniChat</title><article>${renderMarkdown(text)}</article>`,"omnichat-response.html","text/html"));
+  const pdfBtn=action("Download .pdf",()=>textToPdf(text,"omnichat-response.pdf"));
+  const docxBtn=action("Download .docx",()=>textToDocx(text,"omnichat-response.docx"));
+  a.append(copy,mdBtn,txt,htmlBtn,pdfBtn,docxBtn);c.appendChild(a);
+}
+async function textToPdf(text,name){
+  const J=window.jspdf?.jsPDF;if(!J)throw new Error("PDF engine is still loading. Try again.");
+  const doc=new J({unit:"pt",format:"a4"}),margin=42,w=doc.internal.pageSize.getWidth()-margin*2,h=doc.internal.pageSize.getHeight();
+  const lines=doc.splitTextToSize(String(text),w);let y=margin;doc.setFont("helvetica","normal");doc.setFontSize(10);
+  for(const line of lines){if(y>h-margin){doc.addPage();y=margin}doc.text(line,margin,y);y+=14}doc.save(name);
+}
+async function textToDocx(text,name){
+  const D=window.docx;if(!D)throw new Error("DOCX engine is still loading. Try again.");
+  const paragraphs=String(text).split(/\r?\n/).map(x=>new D.Paragraph({children:[new D.TextRun(x)]}));
+  const doc=new D.Document({sections:[{children:paragraphs.length?paragraphs:[new D.Paragraph("")]}]});
+  const blob=await D.Packer.toBlob(doc);const a=document.createElement("a");const u=URL.createObjectURL(blob);a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500);
 }
 function action(label,fn){const b=document.createElement("button");b.className="act";b.textContent=label;b.onclick=async()=>{try{await fn();b.textContent=label==="Copy"?"Copied":label;setTimeout(()=>b.textContent=label,900)}catch{}};return b}
 function typing(){const m=document.createElement("div");m.id="typing";m.className="msg";m.innerHTML='<div class="avatar ai">O</div><div class="content"><div class="typing"><i></i><i></i><i></i></div></div>';inner.appendChild(m);chat.scrollTop=chat.scrollHeight}
@@ -194,30 +208,4 @@ async function convertSelected(ext){
   if(!attachments.length){alert("Attach a file first.");return;}
   await convertFile(attachments[0],ext);
 }
-async function readFileForConversion(file){
-  const fd=new FormData();fd.append("files",file,file.name);
-  const r=await fetch("/api/file",{method:"POST",body:fd});
-  const data=await r.json();
-  if(!r.ok)throw new Error(data.error||"Could not read the file");
-  const item=(data.files||[])[0];
-  if(!item)throw new Error("No file content returned");
-  if(item.type==="error")throw new Error(item.error||"Could not read the file");
-  if(item.type==="image")throw new Error("Image-to-PDF/DOCX conversion needs OCR/text extraction; use a text/PDF/DOCX file.");
-  return item.data||"";
-}
-function plainTextFromMarkdown(md){
-  const tmp=document.createElement("div");tmp.innerHTML=md(md||"");
-  return tmp.innerText||tmp.textContent||"";
-}
-async function convertFile(file,ext){
-  try{
-    const text=await readFileForConversion(file);
-    if(!text.trim())throw new Error("The file contains no readable text.");
-    const base=(file.name.replace(/\.[^.]+$/,"")||"omnichat-converted").replace(/[^a-z0-9_-]+/gi,"_");
-    if(ext==="pdf"){
-      const J=window.jspdf?.jsPDF;
-      if(!J)throw new Error("PDF engine is still loading. Try again.");
-      const doc=new J({unit:"pt",format:"a4"});
-      const margin=42,maxW=doc.internal.pageSize.getWidth()-margin*2;
-      const lines=doc.splitTextToSize(plainTextFromMarkdown(text),maxW);
-      let 
+async function readFileForConversi
