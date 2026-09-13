@@ -2,48 +2,186 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0f"><meta name="description" content="OmniChat — direct AI chat with attachments and exports.">
+<meta name="theme-color" content="#0b0b0f"><meta name="description" content="OmniChat — AI chat, files, images and exports.">
 <link rel="manifest" href="/manifest.json">
 <title>OmniChat</title>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
 <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/common.min.js"></script>
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b0b0f;color:#f4f4f5}button,textarea,select{font:inherit}button{cursor:pointer}body{overflow:hidden}.app{height:100%;display:flex}.sidebar{width:260px;background:#101014;border-right:1px solid #24242b;padding:14px;display:flex;flex-direction:column;gap:12px}.brand{font-size:20px;font-weight:800;padding:8px 6px}.brand b{font-weight:800}.new{border:1px solid #303038;background:#19191f;color:#fff;border-radius:10px;padding:11px}.history{overflow:auto;font-size:13px;color:#aaa}.history div{padding:9px;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.main{flex:1;min-width:0;display:flex;flex-direction:column}.main header{height:58px;border-bottom:1px solid #24242b;display:flex;align-items:center;gap:10px;padding:0 14px}.menu{display:none;background:none;border:0;color:#ddd;font-size:22px}.logo{font-size:19px;font-weight:700;margin-right:auto}.logo b{font-weight:900}.mode{background:#15151a;color:#eee;border:1px solid #303038;border-radius:9px;padding:8px 10px;max-width:170px}.chat{flex:1;overflow:auto}.inner{max-width:900px;margin:auto;padding:30px 18px 140px}.welcome{text-align:center;padding:12vh 0}.badge{margin:auto;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#f4f4f5;color:#111;font-weight:900;font-size:25px}.welcome h1{font-size:30px;margin:18px 0 8px}.welcome p{color:#96969f;margin:0 0 24px}.suggestions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:700px;margin:auto}.suggestion{background:#15151a;border:1px solid #2b2b33;color:#ddd;border-radius:11px;padding:13px 9px}.composer-wrap{position:fixed;bottom:0;left:260px;right:0;background:linear-gradient(transparent,#0b0b0f 28%);padding:26px 18px 14px}.composer{max-width:900px;margin:auto;border:1px solid #34343d;background:#15151a;border-radius:16px;padding:8px;box-shadow:0 8px 40px #0008}.textarea-row{display:flex;align-items:flex-end;gap:7px}.input{width:100%;resize:none;max-height:150px;min-height:42px;border:0;outline:0;background:transparent;color:#fff;padding:9px 8px;line-height:1.45}.icon-btn,.send{width:40px;height:40px;border-radius:11px;border:1px solid #303038;background:#1d1d23;color:#ddd;flex:none}.send{background:#eee;color:#111;font-size:20px;font-weight:800}.send:disabled{opacity:.45}.foot{text-align:center;color:#666;font-size:11px;margin-top:8px}.attach-row{display:flex;gap:7px;flex-wrap:wrap;padding:3px 4px 5px}.chip{display:flex;align-items:center;gap:6px;background:#222229;border:1px solid #35353e;border-radius:9px;padding:5px 8px;font-size:12px;color:#ddd;max-width:220px}.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chip button{background:none;border:0;color:#999;padding:0}.msg{display:flex;gap:11px;margin:24px 0}.avatar{width:31px;height:31px;border-radius:9px;display:grid;place-items:center;font-size:9px;font-weight:800;flex:none}.avatar.ai{background:#eee;color:#111}.avatar.me{background:#24242b;color:#ddd}.content{min-width:0;line-height:1.65;max-width:calc(100% - 42px)}.content p:first-child{margin-top:0}.content pre{overflow:auto;background:#111116;border:1px solid #292931;padding:12px;border-radius:10px}.content code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.content :not(pre)>code{background:#202027;padding:2px 5px;border-radius:5px}.actions{display:flex;gap:6px;margin-top:9px}.act{font-size:11px;color:#aaa;background:#16161c;border:1px solid #2b2b33;border-radius:7px;padding:5px 8px}.typing{display:flex;gap:4px;padding:8px 0}.typing i{width:6px;height:6px;border-radius:50%;background:#777;animation:b 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}@keyframes b{50%{opacity:.2}}.file-menu{position:absolute;bottom:62px;left:8px;background:#18181e;border:1px solid #33333b;border-radius:11px;padding:5px;display:none;box-shadow:0 10px 30px #0008}.file-menu button{display:block;width:180px;text-align:left;background:none;border:0;color:#ddd;padding:9px;border-radius:7px}.file-menu button:hover{background:#25252d}.composer{position:relative}.show{display:block}.overlay{display:none}
-@media(max-width:720px){.sidebar{position:fixed;z-index:20;left:-280px;top:0;bottom:0;transition:.2s}.sidebar.open{left:0}.menu{display:block}.overlay.show{display:block;position:fixed;inset:0;background:#0008;z-index:10}.composer-wrap{left:0;padding:24px 10px 10px}.inner{padding-left:12px;padding-right:12px}.suggestions{grid-template-columns:repeat(2,1fr)}.welcome{padding-top:9vh}.welcome h1{font-size:26px}.mode{max-width:145px}}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b0b0f;color:#f4f4f5}button,textarea,select{font:inherit}button{cursor:pointer}body{overflow:hidden}.app{height:100%;display:flex}.sidebar{width:270px;background:#101014;border-right:1px solid #24242b;padding:14px;display:flex;flex-direction:column;gap:12px}.brand{font-size:20px;font-weight:800;padding:8px 6px}.brand b,.logo b{font-weight:900}.new{border:1px solid #303038;background:#19191f;color:#fff;border-radius:10px;padding:11px}.history{overflow:auto;font-size:13px;color:#aaa}.hist{display:flex;align-items:center;gap:5px;padding:8px;border-radius:8px;margin-bottom:3px}.hist:hover{background:#19191f}.hist.active{background:#222229;color:#fff}.hist-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.hist-del{background:none;border:0;color:#777;padding:3px}.main{flex:1;min-width:0;display:flex;flex-direction:column}.main header{height:58px;border-bottom:1px solid #24242b;display:flex;align-items:center;gap:10px;padding:0 14px}.menu{display:none;background:none;border:0;color:#ddd;font-size:22px}.logo{font-size:19px;font-weight:700;margin-right:auto}.mode{background:#15151a;color:#eee;border:1px solid #303038;border-radius:9px;padding:8px 10px;max-width:170px}.chat{flex:1;overflow:auto}.inner{max-width:920px;margin:auto;padding:30px 18px 150px}.welcome{text-align:center;padding:10vh 0}.badge{margin:auto;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#f4f4f5;color:#111;font-weight:900;font-size:25px}.welcome h1{font-size:30px;margin:18px 0 8px}.welcome p{color:#96969f;margin:0 0 24px}.suggestions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:760px;margin:auto}.suggestion{background:#15151a;border:1px solid #2b2b33;color:#ddd;border-radius:11px;padding:13px 9px}.composer-wrap{position:fixed;bottom:0;left:270px;right:0;background:linear-gradient(transparent,#0b0b0f 28%);padding:26px 18px 14px;z-index:5}.composer{max-width:920px;margin:auto;border:1px solid #34343d;background:#15151a;border-radius:16px;padding:8px;box-shadow:0 8px 40px #0008;position:relative}.textarea-row{display:flex;align-items:flex-end;gap:7px}.input{width:100%;resize:none;max-height:150px;min-height:42px;border:0;outline:0;background:transparent;color:#fff;padding:9px 8px;line-height:1.45}.icon-btn,.send{width:40px;height:40px;border-radius:11px;border:1px solid #303038;background:#1d1d23;color:#ddd;flex:none}.send{background:#eee;color:#111;font-size:20px;font-weight:800}.send:disabled{opacity:.45}.foot{text-align:center;color:#666;font-size:11px;margin-top:8px}.attach-row{display:flex;gap:7px;flex-wrap:wrap;padding:3px 4px 5px}.chip{display:flex;align-items:center;gap:6px;background:#222229;border:1px solid #35353e;border-radius:9px;padding:5px 8px;font-size:12px;color:#ddd;max-width:220px}.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chip button{background:none;border:0;color:#999;padding:0}.msg{display:flex;gap:11px;margin:24px 0}.avatar{width:31px;height:31px;border-radius:9px;display:grid;place-items:center;font-size:9px;font-weight:800;flex:none}.avatar.ai{background:#eee;color:#111}.avatar.me{background:#24242b;color:#ddd}.content{min-width:0;line-height:1.65;max-width:calc(100% - 42px);width:100%}.content p:first-child{margin-top:0}.content pre{overflow:auto;background:#111116;border:1px solid #292931;padding:12px;border-radius:10px}.content code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.content :not(pre)>code{background:#202027;padding:2px 5px;border-radius:5px}.actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}.act{font-size:11px;color:#aaa;background:#16161c;border:1px solid #2b2b33;border-radius:7px;padding:5px 8px}.generated-img{max-width:100%;border-radius:12px;border:1px solid #2b2b33;display:block;margin-top:5px}.typing{display:flex;gap:4px;padding:8px 0}.typing i{width:6px;height:6px;border-radius:50%;background:#777;animation:b 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}@keyframes b{50%{opacity:.2}}.file-menu{position:absolute;bottom:62px;left:8px;background:#18181e;border:1px solid #33333b;border-radius:11px;padding:5px;display:none;box-shadow:0 10px 30px #0008}.file-menu button{display:block;width:210px;text-align:left;background:none;border:0;color:#ddd;padding:9px;border-radius:7px}.file-menu button:hover{background:#25252d}.show{display:block}.overlay{display:none}.toolhint{font-size:11px;color:#777;margin:2px 5px 7px}.empty{color:#666;font-size:12px;padding:8px}
+@media(max-width:720px){.sidebar{position:fixed;z-index:20;left:-290px;top:0;bottom:0;transition:.2s}.sidebar.open{left:0}.menu{display:block}.overlay.show{display:block;position:fixed;inset:0;background:#0008;z-index:10}.composer-wrap{left:0;padding:24px 10px 10px}.inner{padding-left:12px;padding-right:12px}.suggestions{grid-template-columns:repeat(2,1fr)}.welcome{padding-top:8vh}.welcome h1{font-size:26px}.mode{max-width:145px}}
 </style>
 </head>
 <body>
 <div class="app">
-<aside id="sidebar" class="sidebar"><div class="brand">Omni<b>Chat</b></div><button class="new" onclick="newChat()">＋ New chat</button><div id="history" class="history"></div></aside>
+<aside id="sidebar" class="sidebar">
+  <div class="brand">Omni<b>Chat</b></div>
+  <button class="new" onclick="newChat()">＋ New chat</button>
+  <div id="history" class="history"></div>
+</aside>
 <div id="overlay" class="overlay" onclick="toggleSide(false)"></div>
 <section class="main">
-<header><button class="menu" onclick="toggleSide()">☰</button><div class="logo">Omni<b>Chat</b></div><select id="mode" class="mode"><option value="grok">😏 Direct</option><option value="general">🟢 General</option><option value="reasoning">🧠 Reasoning</option><option value="coding">💻 Coding</option><option value="creative">✍️ Creative</option></select></header>
+<header><button class="menu" onclick="toggleSide()">☰</button><div class="logo">Omni<b>Chat</b></div>
+<select id="mode" class="mode"><option value="grok">😏 Direct</option><option value="general">🟢 General</option><option value="reasoning">🧠 Reasoning</option><option value="coding">💻 Coding</option><option value="creative">✍️ Creative</option></select></header>
 <main id="chat" class="chat"><div id="inner" class="inner"></div></main>
-<div class="composer-wrap"><div class="composer"><div id="fileMenu" class="file-menu"><button onclick="pickFiles()">📎 Attach files</button><button onclick="exportChat('md')">⬇️ Export chat (.md)</button><button onclick="exportChat('txt')">⬇️ Export chat (.txt)</button><button onclick="exportChat('json')">⬇️ Export chat (.json)</button></div><div id="attachRow" class="attach-row"></div><div class="textarea-row"><button class="icon-btn" title="Attach files" onclick="toggleFileMenu()">＋</button><textarea id="input" class="input" rows="1" placeholder="Message OmniChat..."></textarea><button id="send" class="send" onclick="send()">↑</button></div></div><input id="files" type="file" hidden multiple accept=".txt,.md,.csv,.json,.html,.htm,.pdf,.docx,.odt,.jpg,.jpeg,.png,.webp,.gif,.bmp,image/*"><div class="foot">Direct AI chat • Attachments • Response downloads • Powered by Cloudflare Workers AI</div></div>
+<div class="composer-wrap"><div class="composer">
+  <div id="fileMenu" class="file-menu">
+    <div class="toolhint">TOOLS</div>
+    <button onclick="pickFiles()">📎 Attach files / images</button>
+    <button onclick="imageMode()">🎨 Generate an image</button>
+    <button onclick="exportChat('md')">⬇️ Export chat (.md)</button>
+    <button onclick="exportChat('txt')">⬇️ Export chat (.txt)</button>
+    <button onclick="exportChat('json')">⬇️ Export chat (.json)</button>
+  </div>
+  <div id="attachRow" class="attach-row"></div>
+  <div class="textarea-row"><button class="icon-btn" title="Tools" onclick="toggleFileMenu()">＋</button>
+  <textarea id="input" class="input" rows="1" placeholder="Message OmniChat..."></textarea><button id="send" class="send" onclick="send()">↑</button></div>
+</div><input id="files" type="file" hidden multiple accept=".txt,.md,.csv,.json,.html,.htm,.pdf,.docx,.odt,.jpg,.jpeg,.png,.webp,.gif,.bmp,image/*">
+<div class="foot">AI chat • Files • Image generation • Downloads • Powered by Cloudflare Workers AI</div></div>
 </section></div>
 <script>
 const inner=document.getElementById("inner"),chat=document.getElementById("chat"),input=document.getElementById("input"),sendBtn=document.getElementById("send"),mode=document.getElementById("mode"),historyEl=document.getElementById("history"),fileInput=document.getElementById("files"),attachRow=document.getElementById("attachRow"),fileMenu=document.getElementById("fileMenu");
-let messages=JSON.parse(localStorage.getItem("omnichat_messages")||"[]"),attachments=[],busy=false;
-function welcome(){inner.innerHTML=`<section class="welcome"><div class="badge">O</div><h1>What are we doing?</h1><p>Direct answers. Attach files. Download your work.</p><div class="suggestions"><button class="suggestion" onclick="suggest('Give me a weird but true fact.')">🧠 Weird fact</button><button class="suggestion" onclick="suggest('Roast this idea constructively: ')">😏 Roast an idea</button><button class="suggestion" onclick="suggest('Help me solve this coding problem: ')">💻 Code</button><button class="suggestion" onclick="suggest('Explain something difficult in simple language: ')">⚡ Explain</button></div></section>`}
+
+let sessions=JSON.parse(localStorage.getItem("omnichat_sessions_v3")||"[]");
+let currentId=localStorage.getItem("omnichat_current_v3")||null;
+let attachments=[],busy=false;
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function current(){return sessions.find(s=>s.id===currentId)}
+function ensureSession(){
+  if(!currentId||!current()){const s={id:uid(),title:"New chat",messages:[],updated:Date.now()};sessions.unshift(s);currentId=s.id;persist()}
+}
+function persist(){localStorage.setItem("omnichat_sessions_v3",JSON.stringify(sessions));localStorage.setItem("omnichat_current_v3",currentId||"")}
+function titleFrom(s){const x=s.messages.find(m=>m.role==="user");if(!x)return"New chat";const t=contentToText(x.content).replace(/\s+/g," ").trim();return(t||"New chat").slice(0,42)}
+function updateHistory(){
+  historyEl.innerHTML="";
+  if(!sessions.length){historyEl.innerHTML='<div class="empty">No saved chats yet.</div>';return}
+  sessions.slice().sort((a,b)=>b.updated-a.updated).forEach(s=>{
+    const d=document.createElement("div");d.className="hist"+(s.id===currentId?" active":"");
+    const t=document.createElement("div");t.className="hist-title";t.textContent=s.title||"New chat";
+    const del=document.createElement("button");del.className="hist-del";del.textContent="×";del.title="Delete";
+    del.onclick=e=>{e.stopPropagation();deleteChat(s.id)};
+    d.append(t,del);d.onclick=()=>loadChat(s.id);historyEl.appendChild(d);
+  });
+}
+function saveCurrent(){
+  const s=current();if(!s)return;
+  s.title=titleFrom(s);s.updated=Date.now();persist();updateHistory();
+}
+function newChat(){
+  const s={id:uid(),title:"New chat",messages:[],updated:Date.now()};
+  sessions.unshift(s);currentId=s.id;attachments=[];renderChips();persist();welcome();updateHistory();toggleSide(false);
+}
+function loadChat(id){
+  currentId=id;attachments=[];renderChips();persist();renderSession();updateHistory();toggleSide(false);
+}
+function deleteChat(id){
+  sessions=sessions.filter(s=>s.id!==id);
+  if(currentId===id)currentId=sessions[0]?.id||null;
+  persist();
+  if(!currentId)newChat();else{renderSession();updateHistory()}
+}
+function welcome(){
+  inner.innerHTML=`<section class="welcome"><div class="badge">O</div><h1>What are we doing?</h1><p>Chat, read files, create images and download your work.</p>
+  <div class="suggestions"><button class="suggestion" onclick="suggest('Give me a weird but true fact.')">🧠 Weird fact</button>
+  <button class="suggestion" onclick="suggest('Roast this idea constructively: ')">😏 Roast an idea</button>
+  <button class="suggestion" onclick="suggest('Help me solve this coding problem: ')">💻 Code</button>
+  <button class="suggestion" onclick="suggest('Explain something difficult in simple language: ')">⚡ Explain</button></div></section>`;
+}
 function suggest(t){input.value=t;resizeInput();input.focus()}
 function toggleSide(v){const s=document.getElementById("sidebar"),o=document.getElementById("overlay"),open=v===undefined?!s.classList.contains("open"):v;s.classList.toggle("open",open);o.classList.toggle("show",open)}
 function toggleFileMenu(){fileMenu.classList.toggle("show")}
 function pickFiles(){fileMenu.classList.remove("show");fileInput.click()}
-function resizeInput(){input.style.height="auto";input.style.height=Math.min(input.scrollHeight,150)+"px"}input.addEventListener("input",resizeInput);input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
-fileInput.addEventListener("change",()=>{for(const f of fileInput.files){if(attachments.length>=5)break;attachments.push(f)};fileInput.value="";renderChips()});
-function renderChips(){attachRow.innerHTML="";attachments.forEach((f,i)=>{const d=document.createElement("div");d.className="chip";d.innerHTML=`<span>${escapeHtml(f.name)}</span><button onclick="removeAttachment(${i})">×</button>`;attachRow.appendChild(d)})}
+function imageMode(){fileMenu.classList.remove("show");input.value="Generate an image: ";resizeInput();input.focus()}
+function resizeInput(){input.style.height="auto";input.style.height=Math.min(input.scrollHeight,150)+"px"}
+input.addEventListener("input",resizeInput);
+input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+fileInput.addEventListener("change",()=>{for(const f of fileInput.files){if(attachments.length>=5)break;attachments.push(f)}fileInput.value="";renderChips()});
+function renderChips(){attachRow.innerHTML="";attachments.forEach((f,i)=>{const d=document.createElement("div");d.className="chip";d.innerHTML=`<span>📎 ${escapeHtml(f.name)}</span><button onclick="removeAttachment(${i})">×</button>`;attachRow.appendChild(d)})}
 function removeAttachment(i){attachments.splice(i,1);renderChips()}
-function render(text,user=false,files=[]){const m=document.createElement("div");m.className="msg "+(user?"user":"assistant");m.innerHTML=`<div class="avatar ${user?"me":"ai"}">${user?"YOU":"O"}</div><div class="content"></div>`;const c=m.querySelector(".content");if(user){let extra=files.length?`<div style="color:#999;font-size:12px;margin-top:7px">📎 ${files.map(escapeHtml).join(", ")}</div>`:"";c.innerHTML=escapeHtml(text)+extra}else{c.innerHTML=marked.parse(text);m.querySelectorAll("pre code").forEach(x=>hljs.highlightElement(x));const a=document.createElement("div");a.className="actions";const copy=document.createElement("button");copy.className="act";copy.textContent="Copy";copy.onclick=async()=>{await navigator.clipboard.writeText(text);copy.textContent="Copied";setTimeout(()=>copy.textContent="Copy",1000)};const md=document.createElement("button");md.className="act";md.textContent="Download .md";md.onclick=()=>download(text,"omnichat-response.md","text/markdown");const txt=document.createElement("button");txt.className="act";txt.textContent="Download .txt";txt.onclick=()=>download(text,"omnichat-response.txt","text/plain");a.append(copy,md,txt);c.appendChild(a)}inner.appendChild(m);chat.scrollTop=chat.scrollHeight}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]))}
+function render(text,user=false,files=[]){
+  const m=document.createElement("div");m.className="msg";m.innerHTML=`<div class="avatar ${user?"me":"ai"}">${user?"YOU":"O"}</div><div class="content"></div>`;
+  const c=m.querySelector(".content");
+  if(user){c.innerHTML=marked.parse(escapeHtml(text));if(files.length){const x=document.createElement("div");x.style="color:#999;font-size:12px;margin-top:7px";x.textContent="📎 "+files.join(", ");c.appendChild(x)}}
+  else{c.innerHTML=marked.parse(text);m.querySelectorAll("pre code").forEach(x=>hljs.highlightElement(x));addActions(c,text)}
+  inner.appendChild(m);chat.scrollTop=chat.scrollHeight;
+}
+function renderImage(data,prompt){
+  const m=document.createElement("div");m.className="msg";m.innerHTML='<div class="avatar ai">O</div><div class="content"></div>';
+  const c=m.querySelector(".content");c.innerHTML=`<div style="margin-bottom:8px">${escapeHtml(prompt)}</div>`;
+  const img=document.createElement("img");img.className="generated-img";img.src=data;img.alt=prompt;c.appendChild(img);
+  const a=document.createElement("div");a.className="actions";const b=document.createElement("button");b.className="act";b.textContent="Download image";b.onclick=()=>downloadDataUrl(data,"omnichat-image.jpg");a.appendChild(b);c.appendChild(a);
+  inner.appendChild(m);chat.scrollTop=chat.scrollHeight;
+}
+function addActions(c,text){
+  const a=document.createElement("div");a.className="actions";
+  const copy=action("Copy",async()=>{await navigator.clipboard.writeText(text);});
+  const md=action("Download .md",()=>download(text,"omnichat-response.md","text/markdown"));
+  const txt=action("Download .txt",()=>download(text,"omnichat-response.txt","text/plain"));
+  const htmlBtn=action("Download .html",()=>download(`<!doctype html><meta charset="utf-8"><title>OmniChat</title><article>${marked.parse(text)}</article>`,"omnichat-response.html","text/html"));
+  a.append(copy,md,txt,htmlBtn);c.appendChild(a);
+}
+function action(label,fn){const b=document.createElement("button");b.className="act";b.textContent=label;b.onclick=async()=>{try{await fn();b.textContent=label==="Copy"?"Copied":label;setTimeout(()=>b.textContent=label,900)}catch{}};return b}
 function typing(){const m=document.createElement("div");m.id="typing";m.className="msg";m.innerHTML='<div class="avatar ai">O</div><div class="content"><div class="typing"><i></i><i></i><i></i></div></div>';inner.appendChild(m);chat.scrollTop=chat.scrollHeight}
-function save(){localStorage.setItem("omnichat_messages",JSON.stringify(messages));updateHistory()}function updateHistory(){historyEl.innerHTML="";messages.filter(x=>x.role==="user").slice(-20).reverse().forEach(x=>{const d=document.createElement("div");d.textContent=typeof x.content==="string"?x.content:"Attached file message";historyEl.appendChild(d)})}
-async function prepareAttachments(){if(!attachments.length)return {text:"",images:[],names:[]};const fd=new FormData();attachments.forEach(f=>fd.append("files",f,f.name));const r=await fetch("/api/file",{method:"POST",body:fd});const data=await r.json();if(!r.ok)throw new Error(data.error||"Could not process attachments");const textParts=[],images=[],names=[];for(const item of data.files||[]){names.push(item.name);if(item.type==="text")textParts.push(`\n\n--- File: ${item.name} ---\n${item.data}`);else if(item.type==="image")images.push({name:item.name,mime:item.mime,data:item.data});else if(item.type==="error")textParts.push(`\n\n--- File: ${item.name} ---\n[Could not read: ${item.error}]`)}return {text:textParts.join(""),images,names}}
-async function send(){if(busy)return;const text=input.value.trim();if(!text&&!attachments.length)return;busy=true;sendBtn.disabled=true;input.value="";resizeInput();fileMenu.classList.remove("show");const attached=attachments.splice(0);renderChips();if(!messages.length)inner.innerHTML="";const names=attached.map(x=>x.name);render(text||"",true,names);typing();try{const prepared=await processFiles(attached);let contentParts=[];if(text)contentParts.push({type:"text",text});if(prepared.text)contentParts.push({type:"text",text:prepared.text});for(const img of prepared.images)contentParts.push({type:"image_url",image_url:{url:img.data}});const userContent=contentParts.length===1&&contentParts[0].type==="text"?contentParts[0].text:contentParts;messages.push({role:"user",content:userContent});const apiMessages=messages.map(x=>({role:x.role,content:x.content}));const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:apiMessages,mode:mode.value})});const data=await r.json();document.getElementById("typing")?.remove();if(!r.ok)throw new Error(data.error||"Request failed");messages.push({role:"assistant",content:data.answer});render(data.answer,false);save()}catch(e){document.getElementById("typing")?.remove();render("⚠️ "+e.message,false)}finally{busy=false;sendBtn.disabled=false;input.focus()}}
-async function processFiles(files){if(!files.length)return {text:"",images:[]};const fd=new FormData();files.forEach(f=>fd.append("files",f,f.name));const r=await fetch("/api/file",{method:"POST",body:fd});const data=await r.json();if(!r.ok)throw new Error(data.error||"Could not process attachments");const textParts=[],images=[];for(const item of data.files||[]){if(item.type==="text")textParts.push(`\n\n--- File: ${item.name} ---\n${item.data}`);else if(item.type==="image")images.push(item);else textParts.push(`\n\n--- File: ${item.name} ---\n[Could not read: ${item.error}]`)}return {text:textParts.join(""),images}}
-function exportChat(ext){fileMenu.classList.remove("show");if(!messages.length)return;let data,mime,name;if(ext==="json"){data=JSON.stringify(messages,null,2);mime="application/json";name="omnichat-chat.json"}else if(ext==="md"){data=messages.map(x=>`## ${x.role==="user"?"You":"OmniChat"}\n\n${typeof x.content==="string"?x.content:contentToText(x.content)}`).join("\n\n");mime="text/markdown";name="omnichat-chat.md"}else{data=messages.map(x=>`${x.role==="user"?"You":"OmniChat"}: ${typeof x.content==="string"?x.content:contentToText(x.content)}`).join("\n\n");mime="text/plain";name="omnichat-chat.txt"}download(data,name,mime)}
-function contentToText(c){return Array.isArray(c)?c.map(p=>p.text||`[${p.type}]`).join(" "):String(c||"")}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]))}
+function contentToText(c){return Array.isArray(c)?c.map(p=>p.text||"[image attachment]").join(" "):String(c||"")}
+function apiContent(c){if(!Array.isArray(c))return c;return c.map(p=>p.type==="text"?{type:"text",text:p.text}:p.type==="image_url"?p:null).filter(Boolean)}
+function saveableContent(c){return Array.isArray(c)?c.filter(p=>p.type==="text").map(p=>({type:"text",text:p.text})):c}
+function renderSession(){
+  const s=current();if(!s){welcome();return}inner.innerHTML="";
+  if(!s.messages.length){welcome();return}
+  s.messages.forEach(x=>render(contentToText(x.content),x.role==="user",x.files||[]));
+}
+async function prepareAttachments(files){
+  if(!files.length)return{text:"",images:[],names:[]};
+  const fd=new FormData();files.forEach(f=>fd.append("files",f,f.name));
+  const r=await fetch("/api/file",{method:"POST",body:fd});const data=await r.json();
+  if(!r.ok)throw new Error(data.error||"Could not process attachments");
+  const textParts=[],images=[],names=[];
+  for(const item of data.files||[]){names.push(item.name);if(item.type==="text")textParts.push(`\n\n--- File: ${item.name} ---\n${item.data}`);
+    else if(item.type==="image")images.push({name:item.name,mime:item.mime,data:item.data});
+    else if(item.type==="error")textParts.push(`\n\n--- File: ${item.name} ---\n[Could not read: ${item.error}]`)}
+  return{text:textParts.join(""),images,names};
+}
+function isImageRequest(text){return /^(generate|create|make|draw|design|render|paint|imagine)\s+(an?\s+)?(image|picture|photo|illustration|artwork|wallpaper|logo)\b/i.test(text)||/\b(generate|create|draw|make)\s+(an?\s+)?image\b/i.test(text)}
+function cleanImagePrompt(text){return text.replace(/^.*?\b(?:image|picture|photo|illustration|artwork|wallpaper|logo)\b\s*[:\-]?\s*/i,"").trim()||text}
+async function send(){
+  if(busy)return;ensureSession();
+  const text=input.value.trim();if(!text&&!attachments.length)return;
+  busy=true;sendBtn.disabled=true;input.value="";resizeInput();fileMenu.classList.remove("show");
+  const attached=attachments.splice(0);renderChips();const names=attached.map(x=>x.name);
+  const s=current();if(!s.messages.length)inner.innerHTML="";
+  render(text||"(attached files)",true,names);typing();
+  try{
+    if(text&&isImageRequest(text)&&!attached.length){
+      const r=await fetch("/api/image",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:cleanImagePrompt(text)})});
+      const data=await r.json();document.getElementById("typing")?.remove();if(!r.ok)throw new Error(data.error||"Image generation failed");
+      renderImage(data.image,text);
+      s.messages.push({role:"user",content:text},{role:"assistant",content:"[Generated image]",image:data.image,prompt:text});
+      saveCurrent();return;
+    }
+    const prepared=await prepareAttachments(attached);
+    let contentParts=[];if(text)contentParts.push({type:"text",text});if(prepared.text)contentParts.push({type:"text",text:prepared.text});
+    for(const img of prepared.images)contentParts.push({type:"image_url",image_url:{url:img.data}});
+    const userContent=contentParts.length===1&&contentParts[0].type==="text"?contentParts[0].text:contentParts;
+    const prior=s.messages.map(x=>({role:x.role,content:apiContent(x.content)}));
+    prior.push({role:"user",content:userContent});
+    const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:prior,mode:mode.value})});
+    const data=await r.json();document.getElementById("typing")?.remove();if(!r.ok)throw new Error(data.error||"Request failed");
+    s.messages.push({role:"user",content:saveableContent(userContent),files:names},{role:"assistant",content:data.answer});
+    render(data.answer,false);saveCurrent();
+  }catch(e){document.getElementById("typing")?.remove();render("⚠️ "+e.message,false)}
+  finally{busy=false;sendBtn.disabled=false;input.focus()}
+}
+function exportChat(ext){
+  fileMenu.classList.remove("show");const s=current();if(!s||!s.messages.length)return;
+  let data,mime,name;if(ext==="json"){data=JSON.stringify(s.messages,null,2);mime="application/json";name=(s.title||"omnichat-chat")+".json"}
+  else if(ext==="md"){data=s.messages.map(x=>`## ${x.role==="user"?"You":"OmniChat"}\n\n${contentToText(x.content)}`).join("\n\n");mime="text/markdown";name=(s.title||"omnichat-chat")+".md"}
+  else{data=s.messages.map(x=>`${x.role==="user"?"You":"OmniChat"}: ${contentToText(x.content)}`).join("\n\n");mime="text/plain";name=(s.title||"omnichat-chat")+".txt"}
+  download(data,name.replace(/[^\w.-]+/g,"_"),mime)
+}
 function download(data,name,mime){const blob=new Blob([data],{type:mime});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function newChat(){messages=[];attachments=[];renderChips();localStorage.removeItem("omnichat_messages");welcome();updateHistory();toggleSide(false)}
-function restore(){if(!messages.length){welcome();return}inner.innerHTML="";messages.forEach(x=>render(typeof x.content==="string"?x.content:contentToText(x.content),x.role==="user"));updateHistory()}restore();
+function downloadDataUrl(data,name){const a=document.createElement("a");a.href=data;a.download=name;document.body.appendChild(a);a.click();a.remove()}
+ensureSession();renderSession();updateHistory();
 </script></body></html>
