@@ -43,8 +43,22 @@
 <script>
 const inner=document.getElementById("inner"),chat=document.getElementById("chat"),input=document.getElementById("input"),sendBtn=document.getElementById("send"),mode=document.getElementById("mode"),historyEl=document.getElementById("history"),fileInput=document.getElementById("files"),attachRow=document.getElementById("attachRow"),fileMenu=document.getElementById("fileMenu");
 
-let sessions=JSON.parse(localStorage.getItem("omnichat_sessions_v3")||"[]");
-let currentId=localStorage.getItem("omnichat_current_v3")||null;
+let sessions=[];
+let currentId=null;
+try { sessions=JSON.parse(localStorage.getItem("omnichat_sessions_v3")||"[]"); } catch { sessions=[]; }
+try { currentId=localStorage.getItem("omnichat_current_v3")||null; } catch { currentId=null; }
+// Migrate the v2 single-chat history into the new multi-chat history once.
+if(!sessions.length){
+  try {
+    const old=JSON.parse(localStorage.getItem("omnichat_messages")||"[]");
+    if(Array.isArray(old)&&old.length){
+      const s={id:uid(),title:"Imported chat",messages:old,updated:Date.now()};
+      sessions=[s]; currentId=s.id;
+      localStorage.setItem("omnichat_sessions_v3",JSON.stringify(sessions));
+      localStorage.setItem("omnichat_current_v3",currentId);
+    }
+  } catch {}
+}
 let attachments=[],busy=false;
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
@@ -104,7 +118,7 @@ function render(text,user=false,files=[]){
   const m=document.createElement("div");m.className="msg";m.innerHTML=`<div class="avatar ${user?"me":"ai"}">${user?"YOU":"O"}</div><div class="content"></div>`;
   const c=m.querySelector(".content");
   if(user){c.innerHTML=marked.parse(escapeHtml(text));if(files.length){const x=document.createElement("div");x.style="color:#999;font-size:12px;margin-top:7px";x.textContent="📎 "+files.join(", ");c.appendChild(x)}}
-  else{c.innerHTML=marked.parse(text);m.querySelectorAll("pre code").forEach(x=>hljs.highlightElement(x));addActions(c,text)}
+  else{c.innerHTML=marked.parse(text);if(window.hljs?.highlightElement){m.querySelectorAll("pre code").forEach(x=>{try{hljs.highlightElement(x)}catch{}})}addActions(c,text)}
   inner.appendChild(m);chat.scrollTop=chat.scrollHeight;
 }
 function renderImage(data,prompt){
@@ -131,7 +145,10 @@ function saveableContent(c){return Array.isArray(c)?c.filter(p=>p.type==="text")
 function renderSession(){
   const s=current();if(!s){welcome();return}inner.innerHTML="";
   if(!s.messages.length){welcome();return}
-  s.messages.forEach(x=>render(contentToText(x.content),x.role==="user",x.files||[]));
+  s.messages.forEach(x=>{
+    if(x.role==="assistant" && x.image) renderImage(x.image,x.prompt||"Generated image");
+    else render(contentToText(x.content),x.role==="user",x.files||[]);
+  });
 }
 async function prepareAttachments(files){
   if(!files.length)return{text:"",images:[],names:[]};
@@ -181,7 +198,4 @@ function exportChat(ext){
   else{data=s.messages.map(x=>`${x.role==="user"?"You":"OmniChat"}: ${contentToText(x.content)}`).join("\n\n");mime="text/plain";name=(s.title||"omnichat-chat")+".txt"}
   download(data,name.replace(/[^\w.-]+/g,"_"),mime)
 }
-function download(data,name,mime){const blob=new Blob([data],{type:mime});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function downloadDataUrl(data,name){const a=document.createElement("a");a.href=data;a.download=name;document.body.appendChild(a);a.click();a.remove()}
-ensureSession();renderSession();updateHistory();
-</script></body></html>
+function download(data,name,mime){const blob=new
