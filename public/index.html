@@ -1,197 +1,38 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0f">
-<link rel="manifest" href="/manifest.json">
-<title>OmniChat</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0f"><link rel="manifest" href="/manifest.json"><title>OmniChat</title>
 <style>
-:root{--bg:#0b0b0f;--panel:#121219;--panel2:#191923;--line:#292936;--text:#f4f4f7;--muted:#a4a4b2;--accent:#8b7cff;--danger:#ff5f6d;--user:#26233b}
-*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}
-.app{height:100%;display:flex;flex-direction:column}.top{height:58px;flex:none;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#0d0d12;z-index:5}.brand{font-weight:800;font-size:19px}.brand small{font-size:11px;color:var(--muted);font-weight:500;margin-left:6px}.top-actions{display:flex;gap:6px}.icon{width:40px;height:40px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px}
-.layout{flex:1;min-height:0;display:flex}.side{width:280px;border-right:1px solid var(--line);background:#0f0f15;padding:12px;display:none;flex-direction:column;gap:10px}@media(min-width:800px){.side{display:flex}}.side-title{font-size:13px;color:var(--muted);font-weight:700}.new{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text)}.chats{overflow:auto;display:flex;flex-direction:column;gap:5px}.chat-row{display:flex;align-items:center;gap:4px}.chat-open{flex:1;text-align:left;border:0;background:transparent;color:var(--text);padding:9px;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chat-open.active,.chat-open:hover{background:var(--panel2)}.chat-del{border:0;background:transparent;color:var(--muted);padding:7px}.chat-del:hover{color:var(--danger)}
-.main{flex:1;min-width:0;display:flex;flex-direction:column}.statusbar{height:34px;flex:none;padding:7px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);text-align:right}.messages{flex:1;overflow:auto;padding:18px 14px 28px;display:flex;flex-direction:column;gap:14px}.empty{margin:auto;text-align:center;max-width:620px;color:var(--muted)}.empty h1{color:var(--text);font-size:30px;margin:0 0 8px}.empty p{margin:0 0 18px}.quick{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.quick button{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:9px 12px;border-radius:999px}
-.msg{max-width:900px;width:fit-content;min-width:70px;padding:11px 13px;border-radius:14px;line-height:1.55;word-break:break-word}.user{align-self:flex-end;background:var(--user)}.assistant{align-self:flex-start;background:var(--panel);border:1px solid var(--line)}.msg pre{overflow:auto;background:#08080c;border:1px solid var(--line);padding:12px;border-radius:10px}.msg code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.msg img.generated{display:block;max-width:min(100%,680px);border-radius:10px;margin-top:8px}.file-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}.file-actions button,.download{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:7px 10px;border-radius:8px}.generated-file{border:1px solid var(--line);padding:10px;border-radius:10px;background:#101017}.generated-file strong{display:block}.file-meta{font-size:12px;color:var(--muted);margin-top:3px}
-.composer{border-top:1px solid var(--line);padding:10px;background:#0d0d12}.attach-list{display:flex;gap:6px;overflow:auto;margin-bottom:7px}.attach-chip{background:var(--panel2);border:1px solid var(--line);padding:6px 9px;border-radius:9px;font-size:12px;white-space:nowrap}.input-row{display:flex;gap:7px;align-items:flex-end}.input{flex:1;min-height:46px;max-height:150px;resize:none;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:11px}.send{height:46px;width:50px;border:0;border-radius:12px;background:var(--accent);color:white;font-weight:800}.tools{display:flex;gap:6px;margin-top:7px;overflow:auto}.tools button{border:1px solid var(--line);background:transparent;color:var(--muted);padding:7px 10px;border-radius:8px;font-size:12px;white-space:nowrap}.tools button:hover{color:var(--text)}.tools button:disabled,.send:disabled{opacity:.45;cursor:not-allowed}.toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);background:#22222c;color:var(--text);border:1px solid var(--line);padding:9px 13px;border-radius:10px;display:none;z-index:20;max-width:90%;text-align:center}.hidden{display:none!important}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://unpkg.com/docx@9.5.1/build/index.umd.js"></script>
-</head>
-<body>
-<div class="app">
-  <header class="top">
-    <div class="brand">OmniChat <small>open-model AI</small></div>
-    <div class="top-actions"><button class="icon" id="mobileHistoryBtn" type="button" aria-label="Chats">☰</button><button class="icon" id="newChatBtn" type="button" aria-label="New chat">＋</button></div>
-  </header>
-  <div class="layout">
-    <aside class="side" id="sidebar"><div class="side-title">Chats</div><button class="new" id="newChatSideBtn" type="button">＋ New chat</button><div class="chats" id="chatList"></div></aside>
-    <main class="main">
-      <div class="statusbar" id="status">Ready</div>
-      <section class="messages" id="messages"></section>
-      <section class="composer">
-        <div class="attach-list" id="attachList"></div>
-        <div class="input-row"><button class="icon" id="attachBtn" type="button" aria-label="Attach file">📎</button><textarea class="input" id="promptInput" rows="1" placeholder="Message OmniChat…"></textarea><button class="send" id="sendBtn" type="button" aria-label="Send">↑</button></div>
-        <div class="tools"><button id="imageBtn" type="button">🎨 Generate image</button><button id="exportMdBtn" type="button">Export MD</button><button id="exportTxtBtn" type="button">Export TXT</button><button id="exportJsonBtn" type="button">Export JSON</button></div>
-        <input id="fileInput" class="hidden" type="file" multiple accept=".pdf,.docx,.odt,.txt,.md,.csv,.json,.html,.htm,.xml,.xlsx,.xls,.ods,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg">
-      </section>
-    </main>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
+:root{--bg:#0b0b0f;--panel:#121219;--panel2:#191923;--line:#292936;--text:#f4f4f7;--muted:#a4a4b2;--accent:#8b7cff;--user:#26233b}*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}button,textarea,input{font:inherit}button{cursor:pointer}.app{height:100%;display:flex;flex-direction:column}.top{height:58px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#0d0d12}.brand{font-weight:800;font-size:20px}.brand small{font-size:11px;color:var(--muted);font-weight:500;margin-left:6px}.top-actions{display:flex;gap:6px}.icon{width:42px;height:42px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px}.layout{flex:1;min-height:0;display:flex}.side{width:280px;border-right:1px solid var(--line);background:#0f0f15;padding:12px;display:none;flex-direction:column;gap:10px}@media(min-width:800px){.side{display:flex}}.side-title{color:var(--muted);font-size:13px;font-weight:700}.new{padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text)}.chats{overflow:auto;display:flex;flex-direction:column;gap:5px}.chat-row{display:flex;gap:4px}.chat-open{flex:1;text-align:left;border:0;background:transparent;color:var(--text);padding:9px;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chat-open.active,.chat-open:hover{background:var(--panel2)}.chat-del{border:0;background:transparent;color:var(--muted);padding:7px}.main{flex:1;min-width:0;display:flex;flex-direction:column}.status{height:34px;padding:7px 14px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px;text-align:right}.messages{flex:1;overflow:auto;padding:18px 14px 28px;display:flex;flex-direction:column;gap:14px}.empty{margin:auto;text-align:center;color:var(--muted);max-width:620px}.empty h1{color:var(--text)}.quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.quick button,.tool{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:9px 12px;border-radius:999px}.msg{max-width:900px;width:fit-content;min-width:70px;padding:11px 13px;border-radius:14px;line-height:1.55;word-break:break-word}.user{align-self:flex-end;background:var(--user)}.assistant{align-self:flex-start;background:var(--panel);border:1px solid var(--line)}pre{overflow:auto;background:#08080c;border:1px solid var(--line);padding:12px;border-radius:10px}code{font-family:ui-monospace,Consolas,monospace}.msg img{max-width:min(100%,680px);border-radius:10px;display:block}.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.actions button{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:7px 10px;border-radius:8px}.file{border:1px solid var(--line);padding:10px;border-radius:10px;background:#101017}.composer{border-top:1px solid var(--line);padding:10px;background:#0d0d12}.attach-list{display:flex;gap:6px;overflow:auto;margin-bottom:7px}.chip{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:6px 9px;border-radius:9px;white-space:nowrap}.row{display:flex;gap:7px;align-items:flex-end}.input{flex:1;min-height:46px;max-height:150px;resize:none;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:11px}.send{height:46px;width:50px;border:0;border-radius:12px;background:var(--accent);color:white;font-weight:800}.tools{display:flex;gap:6px;margin-top:7px;overflow:auto}.tools .tool{border-radius:9px;white-space:nowrap;color:var(--muted)}.tools .tool:hover{color:var(--text)}.toast{position:fixed;bottom:95px;left:50%;transform:translateX(-50%);background:#22222c;color:var(--text);border:1px solid var(--line);padding:9px 13px;border-radius:10px;display:none;z-index:50;max-width:90%;text-align:center}.hidden{display:none!important}.searchbar{display:none;border-bottom:1px solid var(--line);padding:8px;gap:6px}.searchbar input{flex:1;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px}.searchbar button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px}.sources a{color:#a99cff}.source{padding:8px 0;border-bottom:1px solid var(--line)}.source small{display:block;color:var(--muted)}
+</style></head><body><div class="app"><header class="top"><div class="brand">OmniChat <small>open-model AI</small></div><div class="top-actions"><button class="icon" id="historyBtn">☰</button><button class="icon" id="newBtn">＋</button></div></header><div class="layout"><aside class="side" id="side"><div class="side-title">Chats</div><button class="new" id="newSide">＋ New chat</button><div class="chats" id="chatList"></div></aside><main class="main"><div class="status" id="status">Ready</div><div class="searchbar" id="searchbar"><input id="searchInput" placeholder="Search the web…"><button id="searchBtn">Search</button></div><section class="messages" id="messages"></section><section class="composer"><div class="attach-list" id="attachments"></div><div class="row"><button class="icon" id="attachBtn">📎</button><textarea class="input" id="input" placeholder="Message OmniChat…"></textarea><button class="send" id="sendBtn">↑</button></div><div class="tools"><button class="tool" id="imageBtn">🎨 Generate image</button><button class="tool" id="webBtn">🌐 Web search</button><button class="tool" id="mdBtn">Export MD</button><button class="tool" id="txtBtn">Export TXT</button><button class="tool" id="jsonBtn">Export JSON</button></div><input class="hidden" id="fileInput" type="file" multiple accept=".pdf,.docx,.odt,.txt,.md,.csv,.json,.html,.htm,.xml,.xlsx,.xls,.ods,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg"></section></main></div></div><div class="toast" id="toast"></div>
 <script>
-(() => {
-  "use strict";
-  const $ = id => document.getElementById(id);
-  const els = {
-    sidebar:$('sidebar'), chatList:$('chatList'), messages:$('messages'), status:$('status'),
-    newChat:$('newChatBtn'), newChatSide:$('newChatSideBtn'), mobileHistory:$('mobileHistoryBtn'),
-    attach:$('attachBtn'), fileInput:$('fileInput'), attachList:$('attachList'), input:$('promptInput'), send:$('sendBtn'),
-    image:$('imageBtn'), exportMd:$('exportMdBtn'), exportTxt:$('exportTxtBtn'), exportJson:$('exportJsonBtn'), toast:$('toast')
-  };
-  const STORE = "omnichat_v9_chats";
-  let chats = loadChats();
-  let activeId = chats[0].id;
-  let attachments = [];
-  let busy = false;
-  let toastTimer = null;
-
-  function uid(){return "c_"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
-  function makeChat(){return {id:uid(),title:"New chat",messages:[],created:Date.now(),updated:Date.now()};}
-  function loadChats(){
-    try{
-      const raw=localStorage.getItem(STORE);
-      if(raw){const x=JSON.parse(raw);if(Array.isArray(x)&&x.length)return x;}
-      const legacy=localStorage.getItem("omnichat_chats");
-      if(legacy){const x=JSON.parse(legacy);if(Array.isArray(x)&&x.length)return x.map(c=>({...c,id:c.id||uid()}));}
-    }catch(e){console.warn(e);}
-    return [makeChat()];
-  }
-  function saveChats(){try{localStorage.setItem(STORE,JSON.stringify(chats));}catch(e){toast("Chat history storage is full.");}}
-  function activeChat(){return chats.find(c=>c.id===activeId)||chats[0];}
-  function createChat(){const c=makeChat();chats.unshift(c);activeId=c.id;attachments=[];els.input.value="";saveChats();renderAll();if(window.innerWidth<800)els.sidebar.style.display="none";els.input.focus();}
-  function deleteChat(id){chats=chats.filter(c=>c.id!==id);if(!chats.length){const c=makeChat();chats=[c];activeId=c.id;}else if(activeId===id)activeId=chats[0].id;saveChats();renderAll();}
-  function setStatus(s){els.status.textContent=s;}
-  function toast(s){clearTimeout(toastTimer);els.toast.textContent=s;els.toast.style.display="block";toastTimer=setTimeout(()=>els.toast.style.display="none",3200);}
-  function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));}
-  function renderMarkdown(s){
-    if(window.marked&&typeof window.marked.parse==="function"){try{return window.marked.parse(String(s),{breaks:true,gfm:true});}catch(e){}}
-    return escapeHtml(s).replace(/\n/g,"<br>");
-  }
-  function renderAll(){renderSidebar();renderMessages();renderAttachments();}
-  function renderSidebar(){
-    els.chatList.innerHTML="";
-    chats.forEach(c=>{
-      const row=document.createElement("div");row.className="chat-row";
-      const b=document.createElement("button");b.type="button";b.className="chat-open"+(c.id===activeId?" active":"");b.textContent=c.title||"New chat";
-      b.addEventListener("click",()=>{activeId=c.id;saveChats();renderAll();if(window.innerWidth<800)els.sidebar.style.display="none";});
-      const d=document.createElement("button");d.type="button";d.className="chat-del";d.textContent="×";d.title="Delete chat";d.addEventListener("click",e=>{e.stopPropagation();deleteChat(c.id);});
-      row.append(b,d);els.chatList.appendChild(row);
-    });
-  }
-  function renderMessages(){
-    const c=activeChat();els.messages.innerHTML="";
-    if(!c.messages.length){
-      const box=document.createElement("div");box.className="empty";box.innerHTML="<h1>OmniChat</h1><p>Chat, code, understand files, generate images and turn your work into downloadable documents.</p>";
-      const quick=document.createElement("div");quick.className="quick";
-      [["Weird fact","Tell me a weird but true fact."],["Roast an idea","Roast this idea constructively: "],["Code","Write a small Python program that explains recursion."],["Explain","Explain a difficult concept simply."]].forEach(([label,text])=>{const b=document.createElement("button");b.type="button";b.textContent=label;b.addEventListener("click",()=>{els.input.value=text;els.input.focus();});quick.appendChild(b);});
-      box.appendChild(quick);els.messages.appendChild(box);return;
-    }
-    c.messages.forEach((m,i)=>appendMessage(m,i));els.messages.scrollTop=els.messages.scrollHeight;
-  }
-  function appendMessage(m,index){
-    const d=document.createElement("div");d.className="msg "+(m.role==="user"?"user":"assistant");
-    if(m.kind==="image"&&m.dataUrl){
-      d.appendChild(document.createTextNode(m.prompt||"Generated image"));
-      const img=document.createElement("img");img.className="generated";img.src=m.dataUrl;img.alt=m.prompt||"Generated image";d.appendChild(img);
-      const bar=document.createElement("div");bar.className="file-actions";const b=document.createElement("button");b.type="button";b.textContent="↓ Download image";b.addEventListener("click",()=>downloadDataUrl(m.dataUrl,"omnichat-image.jpg"));bar.appendChild(b);d.appendChild(bar);
-    }else if(m.kind==="file"){
-      const card=document.createElement("div");card.className="generated-file";card.innerHTML="<strong>📄 "+escapeHtml(m.filename)+"</strong><div class=\"file-meta\">Generated by OmniChat</div>";
-      const bar=document.createElement("div");bar.className="file-actions";const b=document.createElement("button");b.type="button";b.textContent="↓ Download";b.addEventListener("click",()=>exportText(m.source||"",m.ext||"txt",m.filename.replace(/\.[^.]+$/,"")));bar.appendChild(b);card.appendChild(bar);d.appendChild(card);
-    }else{
-      d.innerHTML=renderMarkdown(m.content||"");
-      if(m.role==="assistant"){
-        const bar=document.createElement("div");bar.className="file-actions";
-        [["MD","md"],["TXT","txt"],["PDF","pdf"],["DOCX","docx"]].forEach(([label,ext])=>{const b=document.createElement("button");b.type="button";b.textContent="↓ "+label;b.addEventListener("click",()=>exportText(m.content||"",ext,"omnichat-response"));bar.appendChild(b);});d.appendChild(bar);
-      }
-    }
-    els.messages.appendChild(d);
-  }
-  function renderAttachments(){
-    els.attachList.innerHTML="";
-    attachments.forEach((f,i)=>{const b=document.createElement("button");b.type="button";b.className="attach-chip";b.textContent=f.name+" · "+formatBytes(f.size)+" ×";b.addEventListener("click",()=>{attachments.splice(i,1);renderAttachments();});els.attachList.appendChild(b);});
-  }
-  function formatBytes(n){return n<1024?n+" B":n<1048576?(n/1024).toFixed(1)+" KB":(n/1048576).toFixed(1)+" MB";}
-  function downloadBlob(blob,name){const a=document.createElement("a");const url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
-  function downloadDataUrl(url,name){const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();}
-  function plainText(markdown){return String(markdown).replace(/```[\s\S]*?```/g,m=>m.replace(/^```[^\n]*\n?/,'').replace(/```$/,'')).replace(/[#*_>`]/g,"").replace(/\[(.*?)\]\(.*?\)/g,"$1");}
-  function safeName(s){return (s||"omnichat").replace(/[^a-z0-9-_]+/gi,"-").replace(/^-|-$/g,"").slice(0,50)||"omnichat";}
-  async function exportText(text,ext,prefix="omnichat"){
-    try{
-      if(ext==="md")downloadBlob(new Blob([String(text)],{type:"text/markdown;charset=utf-8"}),safeName(prefix)+".md");
-      else if(ext==="txt")downloadBlob(new Blob([plainText(text)],{type:"text/plain;charset=utf-8"}),safeName(prefix)+".txt");
-      else if(ext==="html")downloadBlob(new Blob(["<!doctype html><html><head><meta charset=utf-8></head><body>"+renderMarkdown(text)+"</body></html>"],{type:"text/html;charset=utf-8"}),safeName(prefix)+".html");
-      else if(ext==="pdf")await makePdf(plainText(text),safeName(prefix)+".pdf");
-      else if(ext==="docx")await makeDocx(plainText(text),safeName(prefix)+".docx");
-    }catch(e){toast("Download failed: "+(e?.message||e));}
-  }
-  async function makePdf(text,name){
-    const js=window.jspdf&&window.jspdf.jsPDF;if(!js)throw new Error("PDF engine did not load. Refresh once and try again.");
-    const pdf=new js({unit:"pt",format:"a4"});const margin=42,width=pdf.internal.pageSize.getWidth()-84;let y=54;pdf.setFont("helvetica","normal");pdf.setFontSize(11);
-    const paragraphs=String(text||"").split("\n");for(const p of paragraphs){const lines=pdf.splitTextToSize(p||" ",width);for(const line of lines){if(y>790){pdf.addPage();y=54;}pdf.text(line,margin,y);y+=16;}y+=4;}pdf.save(name);
-  }
-  async function makeDocx(text,name){
-    if(!window.docx)throw new Error("DOCX engine did not load. Refresh once and try again.");
-    const {Document,Packer,Paragraph}=window.docx;const children=String(text||"").split("\n").map(line=>new Paragraph({text:line||" "}));const doc=new Document({sections:[{properties:{},children}]});downloadBlob(await Packer.toBlob(doc),name);
-  }
-  async function readFile(file){
-    const fd=new FormData();fd.append("file",file,file.name);const r=await fetch("/api/convert",{method:"POST",body:fd});const data=await r.json();if(!r.ok)throw new Error(data.error||"Could not read "+file.name);return data;
-  }
-  function conversionTarget(text){
-    const s=String(text||"").toLowerCase();
-    if(/\b(?:convert|save|turn|export)\b[\s\S]{0,60}\b(?:to|as|into)\b[\s\S]{0,20}\bpdf\b/.test(s)||/\b(?:convert|save|turn|export)\b[\s\S]{0,80}\bpdf\b/.test(s))return "pdf";
-    if(/\b(?:convert|save|turn|export)\b[\s\S]{0,60}\b(?:to|as|into)\b[\s\S]{0,20}\bdocx?\b/.test(s)||/\b(?:convert|save|turn|export)\b[\s\S]{0,80}\bdocx?\b/.test(s))return "docx";
-    return null;
-  }
-  async function convertAttachments(target,files){
-    const c=activeChat();
-    for(const f of files){
-      setStatus("Converting "+f.name+" to "+target.toUpperCase()+"…");
-      const data=await readFile(f);
-      const base=safeName(f.name.replace(/\.[^.]+$/,""));
-      await exportText(data.markdown,target,base);
-      c.messages.push({role:"assistant",kind:"file",filename:base+"."+target,ext:target,source:data.markdown});
-    }
-    c.updated=Date.now();saveChats();renderAll();setStatus("Ready");
-  }
-  async function send(){
-    if(busy)return;const text=els.input.value.trim();if(!text&&!attachments.length)return;
-    const target=conversionTarget(text);
-    if(target&&attachments.length){
-      busy=true;els.send.disabled=true;const files=[...attachments];attachments=[];renderAttachments();els.input.value="";
-      try{await convertAttachments(target,files);toast("Your "+target.toUpperCase()+" file is ready to download.");}
-      catch(e){toast(e.message);}
-      finally{busy=false;els.send.disabled=false;setStatus("Ready");}
-      return;
-    }
-    busy=true;els.send.disabled=true;setStatus("Working…");const c=activeChat();const files=[...attachments];attachments=[];renderAttachments();
-    try{
-      const converted=[];for(const f of files){setStatus("Reading "+f.name+"…");converted.push(await readFile(f));}
-      const content=files.length?`${text||"Analyze the attached file(s)."}\n\nATTACHED FILE CONTENT:\n${converted.map(x=>"--- "+x.name+" ---\n"+x.markdown).join("\n\n")}`:text;
-      c.messages.push({role:"user",content});if(c.messages.length===1)c.title=(text||files[0]?.name||"New chat").slice(0,45);c.updated=Date.now();saveChats();renderAll();
-      const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:c.messages.slice(-40)})});const data=await r.json();if(!r.ok)throw new Error(data.error||"Chat failed");
-      c.messages.push({role:"assistant",content:data.answer});c.updated=Date.now();saveChats();renderAll();
-    }catch(e){c.messages.push({role:"assistant",content:"**Error:** "+(e?.message||e)});saveChats();renderAll();toast(e?.message||"Request failed.");}
-    finally{busy=false;els.send.disabled=false;setStatus("Ready");}
-  }
-  async function generateImage(){
-    if(busy)return;const prompt=els.input.value.trim();if(!prompt){toast("Write an image prompt first.");els.input.focus();return;}
-    busy=true;els.image.disabled=true;setStatus("Generating image…");try{const r=await fetch("/api/image",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt})});const data=await r.json();if(!r.ok)throw new Error(data.error||"Image generation failed");const c=activeChat();c.messages.push({role:"assistant",kind:"image",prompt,dataUrl:data.dataUrl});c.updated=Date.now();saveChats();els.input.value="";renderAll();}catch(e){toast(e?.message||"Image generation failed.");}finally{busy=false;els.image.disabled=false;setStatus("Ready");}
-  }
-  function exportChat(ext){const c=activeChat();if(!c?.messages.length){toast("Nothing to export.");return;}const text=c.messages.map(m=>m.kind==="image"?"[Generated image: "+m.prompt+"]":m.kind==="file"?"[Generated file: "+m.filename+"]":(m.role==="user"?"USER:\n":"ASSISTANT:\n")+(m.content||"")).join("\n\n");if(ext==="json")downloadBlob(new Blob([JSON.stringify(c,null,2)],{type:"application/json"}),safeName(c.title)+".json");else exportText(text,ext,safeName(c.title));}
-
-  els.send.addEventListener("click",send);
-  els.input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}});
-  els.attach.addEventListener("click",()=>els.fileInput.click());
-  els.fileInput.addEventListener("change",e=>{attachments=[...attachments,...Array.from(e.target.files||[])];renderAttachments();e.target.value="";});
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var E={side:$('side'),chatList:$('chatList'),messages:$('messages'),status:$('status'),history:$('historyBtn'),newBtn:$('newBtn'),newSide:$('newSide'),attach:$('attachBtn'),fileInput:$('fileInput'),attachments:$('attachments'),input:$('input'),send:$('sendBtn'),image:$('imageBtn'),web:$('webBtn'),md:$('mdBtn'),txt:$('txtBtn'),json:$('jsonBtn'),searchbar:$('searchbar'),searchInput:$('searchInput'),searchBtn:$('searchBtn'),toast:$('toast')};
+var STORE='omnichat_v10';var chats=[];var activeId=null;var files=[];var busy=false;var timer;
+function uid(){return 'c_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function newChat(){return{id:uid(),title:'New chat',messages:[],updated:Date.now()}}
+function load(){try{var a=JSON.parse(localStorage.getItem(STORE)||'null');if(Array.isArray(a)&&a.length){chats=a;activeId=a[0].id;return}}catch(e){} var legacy=null;try{legacy=JSON.parse(localStorage.getItem('omnichat_chats')||'null')}catch(e){} chats=Array.isArray(legacy)&&legacy.length?legacy:[newChat()];activeId=chats[0].id;save()}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(chats))}catch(e){}}
+function active(){return chats.find(function(c){return c.id===activeId})||chats[0]}
+function toast(s){E.toast.textContent=s;E.toast.style.display='block';clearTimeout(timer);timer=setTimeout(function(){E.toast.style.display='none'},3200)}
+function status(s){E.status.textContent=s}
+function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+function md(s){var x=esc(s);x=x.replace(/```([\w+-]*)\n([\s\S]*?)```/g,function(_,lang,code){return '<pre><code>'+code.replace(/\n$/,'')+'</code></pre>'});x=x.replace(/`([^`]+)`/g,'<code>$1</code>');x=x.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>');x=x.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>');return x.replace(/\n/g,'<br>')}
+function render(){E.chatList.innerHTML='';chats.forEach(function(c){var r=document.createElement('div');r.className='chat-row';var b=document.createElement('button');b.className='chat-open'+(c.id===activeId?' active':'');b.textContent=c.title||'New chat';b.onclick=function(){activeId=c.id;render();save()};var d=document.createElement('button');d.className='chat-del';d.textContent='×';d.onclick=function(ev){ev.stopPropagation();chats=chats.filter(function(x){return x.id!==c.id});if(!chats.length)chats=[newChat()];if(!chats.some(function(x){return x.id===activeId}))activeId=chats[0].id;save();render()};r.appendChild(b);r.appendChild(d);E.chatList.appendChild(r)});E.messages.innerHTML='';var c=active();if(!c.messages.length){var q=document.createElement('div');q.className='empty';q.innerHTML='<h1>OmniChat</h1><p>Chat, code, analyze files, search the web and generate images.</p>';var qs=[['Weird fact','Tell me a weird but true fact.'],['Code','Write a small Python program that explains recursion.'],['Explain','Explain a difficult concept simply.']];var wrap=document.createElement('div');wrap.className='quick';qs.forEach(function(p){var b=document.createElement('button');b.textContent=p[0];b.onclick=function(){E.input.value=p[1];E.input.focus()};wrap.appendChild(b)});q.appendChild(wrap);E.messages.appendChild(q)}else c.messages.forEach(message);E.messages.scrollTop=E.messages.scrollHeight;renderFiles()}
+function message(m){var d=document.createElement('div');d.className='msg '+(m.role==='user'?'user':'assistant');if(m.kind==='image'){d.textContent=m.prompt||'Generated image';var im=document.createElement('img');im.src=m.dataUrl;im.alt=m.prompt||'Generated image';d.appendChild(im);var a=document.createElement('div');a.className='actions';var b=document.createElement('button');b.textContent='↓ Download image';b.onclick=function(){downloadUrl(m.dataUrl,'omnichat-image.jpg')};a.appendChild(b);d.appendChild(a)}else if(m.kind==='file'){var card=document.createElement('div');card.className='file';card.innerHTML='<strong>📄 '+esc(m.filename)+'</strong>';var a=document.createElement('div');a.className='actions';var b=document.createElement('button');b.textContent='↓ Download';b.onclick=function(){download(m.data,m.mime,m.filename)};a.appendChild(b);card.appendChild(a);d.appendChild(card)}else{d.innerHTML=md(m.content||'');if(m.role==='assistant'){var a=document.createElement('div');a.className='actions';[['MD','md'],['TXT','txt'],['PDF','pdf'],['DOCX','docx']].forEach(function(p){var b=document.createElement('button');b.textContent='↓ '+p[0];b.onclick=function(){exportText(m.content,p[1],'omnichat-response')};a.appendChild(b)});d.appendChild(a)}}E.messages.appendChild(d)}
+function renderFiles(){E.attachments.innerHTML='';files.forEach(function(f,i){var b=document.createElement('button');b.className='chip';b.textContent=f.name+' ×';b.onclick=function(){files.splice(i,1);renderFiles()};E.attachments.appendChild(b)})}
+function download(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
+function downloadUrl(url,name){var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function textOnly(s){return String(s||'').replace(/```[\s\S]*?\n|```/g,'').replace(/[#*_>`]/g,'')}
+function exportText(text,ext,prefix){if(ext==='md')return download(new Blob([text],{type:'text/markdown'}),prefix+'.md');if(ext==='txt')return download(new Blob([textOnly(text)],{type:'text/plain'}),prefix+'.txt');if(ext==='pdf')return makePdf(textOnly(text),prefix+'.pdf');if(ext==='docx')return makeDocx(textOnly(text),prefix+'.docx')}
+function makePdf(text,name){var lines=String(text).split('\n'),out='%PDF-1.4\n',objs=[];var pages=[];var pageLines=[];for(var i=0;i<lines.length;i++){var l=lines[i]||' ';if(l.length>95){while(l.length>95){pageLines.push(l.slice(0,95));l=l.slice(95)}}pageLines.push(l)}for(var p=0;p<pageLines.length;p+=45)pages.push(pageLines.slice(p,p+45));if(!pages.length)pages=[['']];var offsets=[0];function obj(s){offsets.push(out.length);out+=(objs.length+1)+' 0 obj\n'+s+'\nendobj\n';objs.push(s)}var font=objs.length+1;obj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');var pageIds=[];pages.forEach(function(pg){var stream='BT /F1 10 Tf 50 790 Td 14 TL ';pg.forEach(function(l){stream+='('+l.replace(/([\\()])/g,'\\$1').replace(/[^\x20-\x7E]/g,'?')+') Tj T* '});stream+='ET';var sid=objs.length+1;obj('<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream');var pid=objs.length+1;obj('<< /Type /Page /Parent PAGES /MediaBox [0 0 595 842] /Resources << /Font << /F1 '+font+' 0 R >> >> /Contents '+sid+' 0 R >>');pageIds.push(pid)});var kids=pageIds.map(function(x){return x+' 0 R'}).join(' ');var pagesId=objs.length+1;obj('<< /Type /Pages /Kids ['+kids+'] /Count '+pageIds.length+' >>');var catalogId=objs.length+1;obj('<< /Type /Catalog /Pages '+pagesId+' 0 R >>');out=out.replaceAll('PAGES',pagesId+' 0 R');var xref=out.length;out+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n';for(var j=1;j<=objs.length;j++)out+=String(offsets[j]).padStart(10,'0')+' 00000 n \n';out+='trailer\n<< /Size '+(objs.length+1)+' /Root '+catalogId+' 0 R >>\nstartxref\n'+xref+'\n%%EOF';download(new Blob([out],{type:'application/pdf'}),name)}
+function crc32(buf){var t=crc32.table||(crc32.table=new Uint32Array(256));if(!t[1]){for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);t[n]=c>>>0}}var c=0xffffffff;for(var i=0;i<buf.length;i++)c=t[(c^buf[i])&255]^(c>>>8);return (c^0xffffffff)>>>0}
+function u16(n){return new Uint8Array([n&255,n>>>8&255])}function u32(n){return new Uint8Array([n&255,n>>>8&255,n>>>16&255,n>>>24&255])}function cat(){var a=[].slice.call(arguments),n=a.reduce(function(s,x){return s+x.length},0),o=new Uint8Array(n),p=0;a.forEach(function(x){o.set(x,p);p+=x.length});return o}
+function zipStore(files){var parts=[],central=[],offset=0;files.forEach(function(f){var name=new TextEncoder().encode(f.name),data=new TextEncoder().encode(f.data),crc=crc32(data);var h=cat(u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),name,data);parts.push(h);var c=cat(u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset),name);central.push(c);offset+=h.length});var centLen=central.reduce(function(s,x){return s+x.length},0);var eocd=cat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(centLen),u32(offset),u16(0));return cat.apply(null,parts.concat(central,[eocd]))}
+function xml(s){return esc(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')}
+function makeDocx(text,name){var paras=String(text).split('\n').map(function(l){return '<w:p><w:r><w:t xml:space="preserve">'+xml(l||' ')+'</w:t></w:r></w:p>'}).join('');var doc='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+paras+'<w:sectPr/></w:body></w:document>';var ct='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';var rel='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';var wr='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>';var z=zipStore([{name:'[Content_Types].xml',data:ct},{name:'_rels/.rels',data:rel},{name:'word/document.xml',data:doc},{name:'word/_rels/document.xml.rels',data:wr}]);download(new Blob([z],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),name)}
+async function readFile(f){var fd=new FormData();fd.append('file',f,f.name);var r=await fetch('/api/convert',{method:'POST',body:fd});var d=await r.json();if(!r.ok)throw Error(d.error||'Could not read '+f.name);return d}
+function target(s){s=String(s).toLowerCase();if(/\b(convert|save|turn|export)\b[\s\S]{0,80}\b(pdf)\b/.test(s))return'pdf';if(/\b(convert|save|turn|export)\b[\s\S]{0,80}\b(docx?)\b/.test(s))return'docx';return null}
+async function send(){if(busy)return;var text=E.input.value.trim();if(!text&&!files.length)return;busy=true;E.send.disabled=true;try{var t=target(text);if(t&&files.length){var fs=files.slice();files=[];renderFiles();for(var i=0;i<fs.length;i++){status('Converting '+fs[i].name+'…');var d=await readFile(fs[i]);var name=fs[i].name.replace(/\.[^.]+$/,'')+'.'+t;if(t==='pdf')makePdf(textOnly(d.markdown),name);else makeDocx(textOnly(d.markdown),name);active().messages.push({role:'assistant',kind:'file',filename:name,data: t==='pdf'?'':'',mime:t==='pdf'?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});}save();render();toast('Download started.');return}var fs2=files.slice();files=[];renderFiles();var converted=[];for(var j=0;j<fs2.length;j++){status('Reading '+fs2[j].name+'…');converted.push(await readFile(fs2[j]))}var content=fs2.length?(text||'Analyze the attached file(s).')+'\n\nATTACHED FILE CONTENT:\n'+converted.map(function(x){return'--- '+x.name+' ---\n'+x.markdown}).join('\n\n'):text;var c=active();c.messages.push({role:'user',content:content});if(c.messages.length===1)c.title=(text||fs2[0]?.name||'New chat').slice(0,45);save();render();status('Working…');var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:c.messages.slice(-40)})});var d=await r.json();if(!r.ok)throw Error(d.error||'Chat failed');c.messages.push({role:'assistant',content:d.answer});c.updated=Date.now();save();render()}catch(e){toast(e.message||'Request failed')}finally{busy=false;E.send.disabled=false;status('Ready')}}
+async function image(){if(busy)return;var p=E.input.value.trim();if(!p)return toast('Write an image prompt first.');busy=true;E.image.disabled=true;status('Generating image…');try{var r=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p})});var d=await r.json();if(!r.ok)throw Error(d.error||'Image failed');active().messages.push({role:'assistant',kind:'image',prompt:p,dataUrl:d.dataUrl});E.input.value='';save();render()}catch(e){toast(e.message)}finally{busy=false;E.image.disabled=false;status('Ready')}}
+async function webSearch(){var q=E.input.value.trim()||prompt('Web search query:');if(!q)return;busy=true;E.web.disabled=true;status('Searching the web…');try{var r=await fetch('/api/web-search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})});var d=await r.json();if(!r.ok)throw Error(d.error||'Search failed');var c=active();var text='Web search results for: '+q+'\n\n'+d.results.map(function(x,i){return(i+1)+'. '+x.title+'\n'+x.url+'\n'+x.snippet}).join('\n\n');c.messages.push({role:'user',content:'Search the web for: '+q});c.messages.push({role:'assistant',content:text});save();render()}catch(e){toast(e.message)}finally{busy=false;E.web.disabled=false;status('Ready')}}
+function 
