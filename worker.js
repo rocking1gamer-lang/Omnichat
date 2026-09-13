@@ -55,8 +55,7 @@ export default {
         if (prompt.length > 2048) return json({error:"Image prompt is too long."},400);
         const result = await env.AI.run(IMAGE_MODEL, {
           prompt,
-          steps: Math.min(Math.max(Number(body.steps)||4,1),8),
-          seed: Math.floor(Math.random()*2147483647)
+          steps: Math.min(Math.max(Number(body.steps)||4,1),8)
         });
         if (!result?.image) return json({error:"Image generation returned no image."},502);
         return json({image:`data:image/jpeg;base64,${result.image}`,prompt});
