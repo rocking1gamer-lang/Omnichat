@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>OmniChat</title>
+<link rel="manifest" href="/manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<style>
+:root{--bg:#0b0d12;--panel:#11141b;--panel2:#191d27;--border:#292e39;--text:#f4f5f7;--muted:#8c94a3;--accent:#7c8cff;--user:#292e4b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+body{overflow:hidden}.app{height:100dvh;display:flex}.main{height:100%;width:100%;display:flex;flex-direction:column}
+header{height:62px;min-height:62px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 12px;background:#0b0d12ee;backdrop-filter:blur(12px);z-index:5}
+.logo{font-weight:850;font-size:19px}.logo b{color:var(--accent)}
+button,select,textarea{font:inherit}button{cursor:pointer}.menu{border:0;background:transparent;color:#fff;font-size:22px;width:40px;height:40px;border-radius:10px}.menu:hover{background:var(--panel2)}
+select{margin-left:auto;background:var(--panel2);border:1px solid var(--border);color:#fff;border-radius:10px;padding:9px;max-width:185px}
+.chat{flex:1;overflow:auto;padding:25px 14px 160px}.inner{max-width:850px;margin:auto}
+.welcome{min-height:65vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.badge{width:66px;height:66px;border-radius:20px;background:linear-gradient(135deg,#7c8cff,#5b6cff);display:grid;place-items:center;font-size:30px;font-weight:900;box-shadow:0 10px 40px #6676ff33}
+.welcome h1{font-size:30px;margin:18px 0 6px}.welcome p{color:var(--muted);margin:0 0 24px}
+.suggestions{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;width:100%;max-width:620px}.suggestion{padding:13px;text-align:left;border:1px solid var(--border);background:var(--panel);color:#dfe2e8;border-radius:12px}
+.msg{display:flex;gap:10px;margin:0 auto 24px}.avatar{width:32px;height:32px;min-width:32px;border-radius:9px;display:grid;place-items:center;font-size:11px;font-weight:800}.me{background:#39406b}.ai{background:linear-gradient(135deg,#6676ff,#8b6cff)}
+.content{min-width:0;flex:1;line-height:1.65;font-size:15px}.user .content{background:var(--user);padding:10px 14px;border-radius:15px}.content pre{background:#080a0e;border:1px solid var(--border);padding:13px;border-radius:11px;overflow:auto}.content code{font-size:13px}.content :not(pre)>code{background:#20242d;padding:2px 5px;border-radius:5px}.content blockquote{border-left:3px solid var(--accent);padding-left:12px;color:#b9bfca}
+.actions{display:flex;gap:4px;margin-top:7px}.act{border:0;background:transparent;color:var(--muted);font-size:12px;padding:5px 7px;border-radius:7px}.act:hover{background:var(--panel2);color:#fff}
+.composer-wrap{position:absolute;bottom:0;left:0;width:100%;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 25%);z-index:4}.composer{max-width:850px;margin:auto;display:flex;gap:7px;align-items:flex-end;background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:8px}.composer:focus-within{border-color:#48517d}textarea{flex:1;background:transparent;color:#fff;border:0;outline:0;resize:none;min-height:40px;max-height:150px;padding:9px 2px}textarea::placeholder{color:#707784}.send{width:40px;height:40px;border:0;border-radius:11px;background:var(--accent);color:#fff;font-weight:800}.send:disabled{opacity:.4}.foot{text-align:center;color:#606877;font-size:10px;padding-top:6px}
+.sidebar{position:absolute;z-index:20;left:0;top:0;height:100%;width:280px;background:var(--panel);border-right:1px solid var(--border);transform:translateX(-100%);transition:.22s;display:flex;flex-direction:column}.sidebar.open{transform:translateX(0)}.sidehead{padding:17px;display:flex;justify-content:space-between;font-weight:850}.close{border:0;background:transparent;color:#aaa;font-size:22px}.new{margin:0 14px 14px;padding:12px;background:var(--panel2);border:1px solid var(--border);border-radius:11px;color:#fff;font-weight:700}.title{padding:8px 16px;color:var(--muted);font-size:11px;text-transform:uppercase}.history{overflow:auto;padding:0 10px}.history div{padding:10px 11px;border-radius:9px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.history div:hover{background:var(--panel2)}.overlay{display:none;position:fixed;inset:0;background:#0009;z-index:15}.overlay.show{display:block}
+.typing{display:flex;gap:4px;padding:8px 0}.typing i{width:6px;height:6px;border-radius:50%;background:#89919f;animation:b 1.1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}@keyframes b{0%,60%,100%{opacity:.25}30%{opacity:1}}
+@media(min-width:800px){.sidebar{position:relative;transform:none}.close,.menu{display:none}.overlay{display:none!important}.main{width:calc(100% - 280px)}.composer-wrap{width:calc(100% - 280px)}}
+@media(max-width:500px){.suggestions{grid-template-columns:1fr}.welcome h1{font-size:27px}select{max-width:155px;font-size:12px}.chat{padding-left:10px;padding-right:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside id="sidebar" class="sidebar">
+  <div class="sidehead"><span>OmniChat</span><button class="close" onclick="toggleSide(false)">×</button></div>
+  <button class="new" onclick="newChat()">＋ New chat</button>
+  <div class="title">Recent chats</div>
+  <div id="history" class="history"></div>
+</aside>
+<div id="overlay" class="overlay" onclick="toggleSide(false)"></div>
+
+<section class="main">
+<header>
+  <button class="menu" onclick="toggleSide()">☰</button>
+  <div class="logo">Omni<b>Chat</b></div>
+  <select id="mode">
+    <option value="grok">😏 Direct</option>
+    <option value="general">🟢 General</option>
+    <option value="reasoning">🧠 Reasoning</option>
+    <option value="coding">💻 Coding</option>
+    <option value="creative">✍️ Creative</option>
+  </select>
+</header>
+
+<main id="chat" class="chat"><div id="inner" class="inner"></div></main>
+
+<div class="composer-wrap">
+  <div class="composer">
+    <textarea id="input" rows="1" placeholder="Message OmniChat..."></textarea>
+    <button id="send" class="send" onclick="send()">↑</button>
+  </div>
+  <div class="foot">Grok-style conversational mode • Powered by an open model on Cloudflare Workers AI</div>
+</div>
+</section>
+</div>
+
+<script>
+const inner=document.getElementById("inner"), chat=document.getElementById("chat");
+const input=document.getElementById("input"), sendBtn=document.getElementById("send");
+const mode=document.getElementById("mode"), historyEl=document.getElementById("history");
+let messages=JSON.parse(localStorage.getItem("omnichat_messages")||"[]"), busy=false;
+
+const prompts={
+  grok:`You are OmniChat's Direct mode. Be sharp, conversational, witty when appropriate, confident but not arrogant, and direct. Avoid corporate-sounding filler. You can use dry humor or playful sarcasm when it genuinely fits. Challenge incorrect assumptions instead of blindly agreeing. Accuracy matters more than sounding confident. Never fabricate facts. Do not claim to be Grok or xAI; you are an independent assistant with a direct, informal style. Do not reveal private chain-of-thought.`,
+  general:`You are OmniChat, a helpful general-purpose assistant. Be accurate, natural, balanced and clear. Use markdown when useful. Do not reveal private chain-of-thought.`,
+  reasoning:`You are a careful reasoning assistant. Analyze assumptions, alternatives and edge cases and give a clear conclusion. Do not reveal private chain-of-thought.`,
+  coding:`You are an expert software engineer. Give practical, correct, maintainable code. Explain important implementation choices briefly. Do not reveal private chain-of-thought.`,
+  creative:`You are an imaginative creative assistant. Write naturally and originally. Avoid generic AI-sounding prose and unnecessary filler.`
+};
+
+function welcome(){
+  inner.innerHTML=`<section class="welcome">
+    <div class="badge">O</div><h1>What are we doing?</h1>
+    <p>Direct answers. Real open model. No fake Grok claim.</p>
+    <div class="suggestions">
+      <button class="suggestion" onclick="suggest('Give me a weird but true fact.')">🧠 Weird fact</button>
+      <button class="suggestion" onclick="suggest('Roast this idea constructively: ')">😏 Roast an idea</button>
+      <button class="suggestion" onclick="suggest('Help me solve this coding problem: ')">💻 Code</button>
+      <button class="suggestion" onclick="suggest('Explain something difficult in simple language: ')">⚡ Explain</button>
+    </div></section>`;
+}
+function suggest(t){input.value=t;resizeInput();input.focus()}
+function toggleSide(v){const s=document.getElementById("sidebar"),o=document.getElementById("overlay");const open=v===undefined?!s.classList.contains("open"):v;s.classList.toggle("open",open);o.classList.toggle("show",open)}
+function resizeInput(){input.style.height="auto";input.style.height=Math.min(input.scrollHeight,150)+"px"}
+input.addEventListener("input",resizeInput);
+input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+
+function render(text,user=false){
+  const m=document.createElement("div");m.className="msg "+(user?"user":"assistant");
+  m.innerHTML=`<div class="avatar ${user?"me":"ai"}">${user?"YOU":"O"}</div><div class="content"></div>`;
+  const c=m.querySelector(".content");
+  c.innerHTML=user?escapeHtml(text):marked.parse(text);
+  if(!user){
+    m.querySelectorAll("pre code").forEach(x=>hljs.highlightElement(x));
+    const a=document.createElement("div");a.className="actions";
+    const copy=document.createElement("button");copy.className="act";copy.textContent="Copy";
+    copy.onclick=async()=>{await navigator.clipboard.writeText(text);copy.textContent="Copied";setTimeout(()=>copy.textContent="Copy",1000)};
+    a.appendChild(copy);c.appendChild(a);
+  }
+  inner.appendChild(m);chat.scrollTop=chat.scrollHeight;
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]))}
+function typing(){const m=document.createElement("div");m.id="typing";m.className="msg";m.innerHTML='<div class="avatar ai">O</div><div class="content"><div class="typing"><i></i><i></i><i></i></div></div>';inner.appendChild(m);chat.scrollTop=chat.scrollHeight}
+function save(){localStorage.setItem("omnichat_messages",JSON.stringify(messages));updateHistory()}
+function updateHistory(){historyEl.innerHTML="";messages.filter(x=>x.role==="user").slice(-20).reverse().forEach(x=>{const d=document.createElement("div");d.textContent=x.content;historyEl.appendChild(d)})}
+
+async function send(){
+  if(busy)return; const text=input.value.trim(); if(!text)return;
+  busy=true;sendBtn.disabled=true;input.value="";resizeInput();
+  if(!messages.length)inner.innerHTML="";
+  messages.push({role:"user",content:text});render(text,true);typing();
+  try{
+    const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages,mode:mode.value})});
+    const data=await r.json();document.getElementById("typing")?.remove();
+    if(!r.ok)throw new Error(data.error||"Request failed");
+    messages.push({role:"assistant",content:data.answer});render(data.answer,false);save();
+  }catch(e){
+    document.getElementById("typing")?.remove();
+    render("⚠️ "+e.message,false);
+  }finally{busy=false;sendBtn.disabled=false;input.focus()}
+}
+function newChat(){messages=[];localStorage.removeItem("omnichat_messages");welcome();updateHistory();toggleSide(false)}
+function restore(){if(!messages.length){welcome();return}inner.innerHTML="";messages.forEach(x=>render(x.content,x.role==="user"));updateHistory()}
+restore();
+</script>
+</body>
+</html>
