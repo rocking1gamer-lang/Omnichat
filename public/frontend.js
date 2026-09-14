@@ -1,6 +1,6 @@
 (()=>{"use strict";
 const $=id=>document.getElementById(id);
-const E={side:$("side"),list:$("chatList"),msgs:$("messages"),status:$("status"),history:$("historyBtn"),newBtn:$("newBtn"),newSide:$("newSide"),attach:$("attachBtn"),input:$("fileInput"),chips:$("attachments"),box:$("input"),send:$("sendBtn"),image:$("imageBtn"),web:$("webBtn"),md:$("mdBtn"),txt:$("txtBtn"),json:$("jsonBtn"),searchbar:$("searchbar"),searchInput:$("searchInput"),searchBtn:$("searchBtn"),toast:$("toast")};
+const E={side:$("side"),list:$("chatList"),msgs:$("messages"),status:$("status"),history:$("historyBtn"),newBtn:$("newBtn"),newSide:$("newSide"),attach:$("attachBtn"),input:$("fileInput"),chips:$("attachments"),box:$("input"),send:$("sendBtn"),image:$("imageBtn"),web:$("webBtn"),md:$("mdBtn"),txt:$("txtBtn"),json:$("jsonBtn"),deep:$("deepBtn"),searchbar:$("searchbar"),searchInput:$("searchInput"),searchBtn:$("searchBtn"),toast:$("toast")};
 const STORE="omnichat_v11"; let chats=[],activeId="",files=[],busy=false,timer=0;
 const uid=()=>crypto.randomUUID?crypto.randomUUID():"c_"+Date.now()+"_"+Math.random().toString(36).slice(2);
 const fresh=()=>({id:uid(),title:"New chat",messages:[],updated:Date.now()});
@@ -20,6 +20,12 @@ else if(m.kind==="search"){
   (m.results||[]).forEach((r,i)=>{let item=document.createElement("div");item.className="search-result";let a=document.createElement("a");a.href=r.url||"#";a.target="_blank";a.rel="noopener noreferrer";a.textContent=(i+1)+". "+(r.title||r.url||"Result");item.append(a);if(r.snippet){let p=document.createElement("p");p.textContent=r.snippet;item.append(p)}list.append(item)});
   if(!m.results?.length){let p=document.createElement("p");p.textContent="No results returned.";list.append(p)}
   d.append(list);
+}
+else if(m.kind==="research"){
+  let h=document.createElement("div");h.innerHTML="<strong>🔎 Deep Research</strong><br>"+esc(m.query||"")+"<br><small>"+(m.sourceCount||0)+" sources discovered · "+(m.readCount||0)+" sources analyzed</small>";d.append(h);
+  let body=document.createElement("div");body.innerHTML=md(m.content||"");d.append(body);
+  if(Array.isArray(m.sources)&&m.sources.length){let box=document.createElement("div");box.className="search-results";let title=document.createElement("strong");title.textContent="Sources";box.append(title);m.sources.forEach((r,i)=>{let item=document.createElement("div");item.className="search-result";let a=document.createElement("a");a.href=r.url||"#";a.target="_blank";a.rel="noopener noreferrer";a.textContent="["+(r.id||i+1)+"] "+(r.title||r.url||"Source");item.append(a);if(r.snippet){let p=document.createElement("p");p.textContent=r.snippet;item.append(p)}box.append(item)});d.append(box)}
+  let a=document.createElement("div");a.className="actions";let b=document.createElement("button");b.type="button";b.textContent="↓ PDF";b.onclick=()=>makeAndDownload(m.content||"","pdf","deep-research");let c=document.createElement("button");c.type="button";c.textContent="↓ DOCX";c.onclick=()=>makeAndDownload(m.content||"","docx","deep-research");a.append(b,c);d.append(a);
 }
 else if(m.kind==="file"){d.innerHTML="<strong>📄 "+esc(m.filename)+"</strong>";let a=document.createElement("div");a.className="actions";let b=document.createElement("button");b.type="button";b.textContent="↓ Download";b.onclick=()=>downloadBytes(base64ToBytes(m.data),m.mime,m.filename);a.append(b);d.append(a)}
 else {d.innerHTML=md(m.content||"");if(m.role==="assistant"){let a=document.createElement("div");a.className="actions";[["MD","md"],["TXT","txt"],["PDF","pdf"],["DOCX","docx"]].forEach(([label,ext])=>{let b=document.createElement("button");b.type="button";b.textContent="↓ "+label;b.onclick=()=>makeAndDownload(m.content||"",ext,"omnichat-response");a.append(b)});d.append(a)}}E.msgs.append(d)}
@@ -49,6 +55,19 @@ async function webSearch(q){
   finally{busy=false;E.web.disabled=false;status("Ready")}
 }
 
+async function deepResearch(){
+  if(busy)return;
+  const q=E.box.value.trim();
+  if(!q)return toast("Enter a research question first.");
+  E.box.value="";busy=true;E.deep.disabled=true;status("Planning and researching…");
+  try{
+    const r=await fetch("/api/deep-research",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:q})});
+    const d=await r.json();if(!r.ok)throw Error(d.error||"Deep research failed");
+    const c=active();c.messages.push({role:"user",content:"Deep research: "+q});c.messages.push({role:"assistant",kind:"research",query:q,content:d.answer,sourceCount:d.sourceCount,readCount:d.readCount,sources:d.sources||[]});c.updated=Date.now();save();render();
+  }catch(e){toast(e.message||"Deep research failed.")}
+  finally{busy=false;E.deep.disabled=false;status("Ready")}
+}
+
 function downloadBytes(bytes,mime,name){let blob=new Blob([bytes],{type:mime}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;a.style.display="none";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 function downloadDataUrl(u,name){let a=document.createElement("a");a.href=u;a.download=name;a.style.display="none";document.body.append(a);a.click();a.remove()}
 function base64ToBytes(b){let bin=atob(b),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a}
@@ -65,6 +84,6 @@ function makeDocx(text,name){let paras=textOnly(text).split(/\r?\n/).map(x=>x?`<
 ];downloadBytes(zipStore(entries),"application/vnd.openxmlformats-officedocument.wordprocessingml.document",name)}
 async function makeAndDownload(text,ext,stem){if(ext==="pdf")makePdf(text,stem+".pdf");else if(ext==="docx")makeDocx(text,stem+".docx");else if(ext==="md")downloadBytes(new TextEncoder().encode(text),"text/markdown",stem+".md");else if(ext==="txt")downloadBytes(new TextEncoder().encode(text),"text/plain",stem+".txt");}
 function exportChat(ext){let c=active();if(!c.messages.length)return toast("Nothing to export.");let t=c.messages.map(m=>(m.role==="user"?"USER:\n":"ASSISTANT:\n")+(m.content||"[Generated "+m.kind+"]")).join("\n\n");makeAndDownload(t,ext,c.title||"omnichat")}
-function bind(){E.send.onclick=send;E.box.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}};E.attach.onclick=()=>E.input.click();E.input.onchange=e=>{files.push(...Array.from(e.target.files||[]));renderFiles();E.input.value=""};E.image.onclick=image;E.web.onclick=()=>webSearch();E.searchBtn.onclick=()=>webSearch(E.searchInput.value);E.newBtn.onclick=E.newSide.onclick=()=>{chats.unshift(fresh());activeId=chats[0].id;save();render()};E.history.onclick=()=>{if(innerWidth<800)E.side.style.display=getComputedStyle(E.side).display==="none"?"flex":"none"};E.md.onclick=()=>exportChat("md");E.txt.onclick=()=>exportChat("txt");E.json.onclick=()=>{let c=active();downloadBytes(new TextEncoder().encode(JSON.stringify(c,null,2)),"application/json",(c.title||"omnichat")+".json")};load();render()}
+function bind(){E.send.onclick=send;E.box.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}};E.attach.onclick=()=>E.input.click();E.input.onchange=e=>{files.push(...Array.from(e.target.files||[]));renderFiles();E.input.value=""};E.image.onclick=image;E.web.onclick=()=>webSearch();E.deep.onclick=deepResearch;E.searchBtn.onclick=()=>webSearch(E.searchInput.value);E.newBtn.onclick=E.newSide.onclick=()=>{chats.unshift(fresh());activeId=chats[0].id;save();render()};E.history.onclick=()=>{if(innerWidth<800)E.side.style.display=getComputedStyle(E.side).display==="none"?"flex":"none"};E.md.onclick=()=>exportChat("md");E.txt.onclick=()=>exportChat("txt");E.json.onclick=()=>{let c=active();downloadBytes(new TextEncoder().encode(JSON.stringify(c,null,2)),"application/json",(c.title||"omnichat")+".json")};load();render()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind);else bind();
 })();
