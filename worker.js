@@ -103,22 +103,68 @@ export default {
   }
 };
 
-async function searchDDG(q){
-  const endpoints=["https://html.duckduckgo.com/html/?q="+encodeURIComponent(q),"https://lite.duckduckgo.com/lite/?q="+encodeURIComponent(q)];
-  let html="";
-  for(const endpoint of endpoints){try{const r=await fetch(endpoint,{headers:{"User-Agent":"Mozilla/5.0 (compatible; OmniChat/13.0)"}});if(r.ok){html=await r.text();break}}catch{}}
-  if(!html)return [];
-  const out=[],seen=new Set();
-  const patterns=[
-    /<a[^>]+class=["']result__a["'][^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,
-    /<a[^>]+class=["'][^"']*result-link[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,
-    /<a[^>]+href=["'](https?:\/\/[^"']+)["'][^>]*>([\s\S]{5,180}?)<\/a>/gi
+async function searchDDG(q) {
+  const endpoints = [
+    "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q),
+    "https://lite.duckduckgo.com/lite/?q=" + encodeURIComponent(q)
   ];
-  for(const re of patterns){let m;while((m=re.exec(html))&&out.length<10){const title=strip(m[2]),href=decodeRedirect(m[1]);if(!title||!href||seen.has(href)||/^javascript:/i.test(href)||href.includes("duckduckgo.com/y.js"))continue;if(/DuckDuckGo|Privacy|Settings|Feedback/i.test(title)&&!href.includes("wikipedia.org"))continue;seen.add(href);const nearby=html.slice(Math.max(0,m.index-500),Math.min(html.length,m.index+5000));const sm=nearby.match(/class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\/[^^>]+>/i)||nearby.match(/class=["'][^"']*snippet[^"']*["'][^>]*>([\s\S]*?)<\/[^>]+>/i);out.push({query:q,title,url:href,snippet:strip(sm?.[1]||"")})}}if(out.length>=10)break}
-  return out;
+
+  let html = "";
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; OmniChat/13.0)" }
+      });
+      if (response.ok) {
+        html = await response.text();
+        break;
+      }
+    } catch (_) {}
+  }
+
+  if (!html) return [];
+
+  const results = [];
+  const seen = new Set();
+  const patterns = [
+    /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,
+    /<a[^>]+class=["'][^"']*result-link[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi
+  ];
+
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(html)) !== null && results.length < 10) {
+      const title = strip(match[2]);
+      const href = decodeRedirect(match[1]);
+      if (!title || !href || seen.has(href)) continue;
+      if (/^javascript:/i.test(href)) continue;
+      if (href.includes("duckduckgo.com/y.js")) continue;
+      if (/DuckDuckGo|Privacy|Settings|Feedback/i.test(title) && !href.includes("wikipedia.org")) continue;
+
+      seen.add(href);
+      const nearby = html.slice(
+        Math.max(0, match.index - 500),
+        Math.min(html.length, match.index + 5000)
+      );
+      const snippetMatch =
+        nearby.match(/class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\/[a-z0-9]+>/i) ||
+        nearby.match(/class=["'][^"']*snippet[^"']*["'][^>]*>([\s\S]*?)<\/[a-z0-9]+>/i);
+
+      results.push({
+        query: q,
+        title,
+        url: href,
+        snippet: strip(snippetMatch ? snippetMatch[1] : "")
+      });
+    }
+    if (results.length >= 10) break;
+  }
+
+  return results;
 }
 function normalizeUrl(u){try{const x=new URL(u);x.hash="";return x.toString().replace(/\/$/,"")}catch{return ""}}
 async function fetchPageText(u){const r=await fetch(u,{headers:{"User-Agent":"Mozilla/5.0 (compatible; OmniChat-DeepResearch/13.0)"}});if(!r.ok)return "";const t=await r.text();if(!/^<html|<!doctype/i.test(t))return strip(t).slice(0,12000);return strip(t.replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<nav[\s\S]*?<\/nav>/gi," ").replace(/<footer[\s\S]*?<\/footer>/gi," ")).slice(0,12000)}
 function strip(s){return String(s||"").replace(/<[^>]+>/g," ").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/\s+/g," ").trim();}
 function decodeRedirect(u){try{const x=new URL(u,"https://html.duckduckgo.com");const v=x.searchParams.get("uddg");return v?decodeURIComponent(v):u.startsWith("/")?"https://html.duckduckgo.com"+u:u}catch{return u}}
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{...CORS,"Content-Type":"application/json"}})}
+                                                            
